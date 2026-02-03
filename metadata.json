@@ -1,0 +1,7 @@
+{
+  "name": "Gerenciador TeamBot",
+  "description": "Central inteligente de links e novidades premium com upload de arquivos e design ultra-moderno.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
