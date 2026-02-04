@@ -28,7 +28,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const [uploading, setUploading] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'LINKS' | 'NEWS' | 'PROFILE'>('LINKS');
   const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [showSqlHelper, setShowSqlHelper] = useState(false);
 
   const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
@@ -49,7 +48,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     setNotifications(prev => [...prev, { id, message, type }]);
     setTimeout(() => {
       setNotifications(prev => prev.filter(n => n.id !== id));
-    }, 8000);
+    }, 5000);
   };
 
   const fetchUserData = async (userId: string) => {
@@ -63,30 +62,21 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     if (nws) setNews(nws || []);
   };
 
-  const handleFileUpload = async (file: File, bucketPath: string, fieldId: string) => {
-    if (!session) return;
-    setUploading(fieldId);
+  const handleFileUpload = async (file: File, bucketPath: string) => {
+    if (!session) return null;
+    setUploading(bucketPath);
     try {
       const fileExt = file.name.split('.').pop();
       const fileName = `${session.user.id}/${bucketPath}/${Date.now()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
         .from('teambot')
-        .upload(fileName, file, { 
-          upsert: true,
-          contentType: file.type
-        });
+        .upload(fileName, file, { upsert: true });
 
-      if (uploadError) {
-        if (uploadError.message.toLowerCase().includes('row-level security') || uploadError.message.toLowerCase().includes('policy')) {
-          setShowSqlHelper(true);
-          throw new Error('Bloqueio de Segurança: Execute o SQL de permissões no seu painel Supabase.');
-        }
-        throw uploadError;
-      }
+      if (uploadError) throw uploadError;
 
       const { data } = supabase.storage.from('teambot').getPublicUrl(fileName);
-      addNotification('Imagem processada com sucesso!', 'success');
+      addNotification('Upload concluído!', 'success');
       return data.publicUrl;
     } catch (error: any) {
       addNotification(error.message, 'error');
@@ -105,7 +95,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
         if (error) throw error;
         setSession(data.session);
         fetchUserData(data.session!.user.id);
-        addNotification('Acesso liberado!', 'success');
       } else if (authMode === 'SIGNUP') {
         const { data, error } = await supabase.auth.signUp({ email, password });
         if (error) throw error;
@@ -116,9 +105,9 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             name: 'Novo TeamBot', 
             slug: defaultSlug,
             bio: 'Minha nova central premium.',
-            avatar_url: `https://api.dicebear.com/7.x/bottts/svg?seed=${data.user.id}`
+            avatar_url: `https://i.ibb.co/v4pXp2F/teambot-mascot.png`
           }]);
-          addNotification('Conta criada! Verifique seu e-mail.', 'info');
+          addNotification('Conta criada!', 'success');
           setAuthMode('LOGIN');
         }
       }
@@ -129,17 +118,14 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const saveProfile = async () => {
     setLoading(true);
     try {
-      const cleanSlug = profile.slug?.toLowerCase().trim().replace(/[^a-z0-9-]/g, '');
       const { error } = await supabase.from('profiles').upsert({
         id: session.user.id,
         ...profile,
-        slug: cleanSlug,
         updated_at: new Date()
       });
       if (error) throw error;
-      setProfile({...profile, slug: cleanSlug});
-      addNotification('Perfil salvo com sucesso!', 'success');
-    } catch (err: any) { addNotification('Erro: slug em uso ou erro de rede.', 'error'); }
+      addNotification('Perfil atualizado!', 'success');
+    } catch (err: any) { addNotification(err.message, 'error'); }
     finally { setLoading(false); }
   };
 
@@ -152,7 +138,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
       setLinks([data[0], ...links]);
       setNewLink({ title: '', description: '', url: '', icon_url: '' });
       setShowAddLinkForm(false);
-      addNotification('Novo link adicionado!', 'success');
+      addNotification('Link adicionado!', 'success');
     } catch (err: any) { addNotification(err.message, 'error'); }
     finally { setLoading(false); }
   };
@@ -162,10 +148,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     setLoading(true);
     try {
       if (editingPostId) {
-        const { error } = await supabase
-          .from('news')
-          .update({ ...newPost })
-          .eq('id', editingPostId);
+        const { error } = await supabase.from('news').update({ ...newPost }).eq('id', editingPostId);
         if (error) throw error;
         setNews(news.map(n => n.id === editingPostId ? { ...n, ...newPost } : n));
         addNotification('Postagem atualizada!', 'success');
@@ -173,7 +156,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
         const { data, error } = await supabase.from('news').insert([{ ...newPost, user_id: session.user.id }]).select();
         if (error) throw error;
         setNews([data[0], ...news]);
-        addNotification('Postagem publicada!', 'success');
+        addNotification('Notícia publicada!', 'success');
       }
       setNewPost({ title: '', content: '', image_url: '' });
       setEditingPostId(null);
@@ -182,15 +165,21 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     finally { setLoading(false); }
   };
 
-  const startEditingNews = (post: News) => {
-    setEditingPostId(post.id);
-    setNewPost({ title: post.title, content: post.content, image_url: post.image_url });
+  // Fix: Implemented startEditingNews function to populate the form for editing
+  const startEditingNews = (n: News) => {
+    setNewPost({
+      title: n.title,
+      content: n.content,
+      image_url: n.image_url
+    });
+    setEditingPostId(n.id);
     setShowAddNewsForm(true);
+    // Scroll to the form
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const deleteLink = async (id: string) => {
-    if (!confirm('Excluir este link permanentemente?')) return;
+    if (!confirm('Excluir este link?')) return;
     await supabase.from('tools').delete().eq('id', id);
     setLinks(links.filter(l => l.id !== id));
     addNotification('Link removido.', 'info');
@@ -203,33 +192,11 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     addNotification('Postagem removida.', 'info');
   };
 
-  const getPublicUrl = () => {
-    const base = window.location.origin;
-    return `${base}/?u=${profile.slug || 'default'}`;
-  };
-
-  const copyToClipboard = () => {
-    const url = getPublicUrl();
-    navigator.clipboard.writeText(url);
-    addNotification('Link copiado! Pronto para postar.', 'success');
-  };
-
-  const handleShare = async () => {
-    const url = getPublicUrl();
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: profile.name, text: profile.bio, url: url });
-      } catch (err) { console.error(err); }
-    } else {
-      copyToClipboard();
-    }
-  };
-
-  const sqlInstructions = `-- Script de Configuração Supabase...`;
+  const getPublicUrl = () => `${window.location.origin}/?u=${profile.slug || 'teambot'}`;
 
   return (
-    <div className="relative min-h-[600px] pb-32">
-      {/* Toasts */}
+    <div className="relative min-h-[600px] pb-32 font-sans">
+      {/* Notifications */}
       <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4 flex flex-col gap-3 pointer-events-none">
         {notifications.map(n => (
           <div key={n.id} className={`glass p-5 rounded-3xl shadow-2xl flex items-start gap-4 border-l-4 pointer-events-auto animate-in slide-in-from-top-10 duration-500 ${
@@ -241,16 +208,16 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
       </div>
 
       {!session ? (
-        <div className="max-w-md mx-auto mt-10 p-12 glass rounded-[3.5rem] text-center shadow-2xl">
+        <div className="max-w-md mx-auto mt-10 p-12 glass rounded-[3.5rem] text-center shadow-2xl animate-in zoom-in-95">
             <h2 className="text-3xl font-black mb-10 text-white uppercase tracking-widest">TeamBot Admin</h2>
             <form onSubmit={handleAuth} className="space-y-6 text-left">
-              <input type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-900 border border-white/5 p-5 rounded-2xl text-white" required />
-              <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-900 border border-white/5 p-5 rounded-2xl text-white" required />
-              <button disabled={loading} className="w-full bg-indigo-600 py-6 rounded-2xl font-black text-white uppercase tracking-[0.3em] text-[10px]">
-                {loading ? 'Entrando...' : authMode === 'LOGIN' ? 'Acessar Painel' : 'Criar Conta'}
+              <input type="email" placeholder="E-mail" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-900 border border-white/5 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-indigo-500" required />
+              <input type="password" placeholder="Senha" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-900 border border-white/5 p-5 rounded-2xl text-white outline-none focus:ring-2 focus:ring-indigo-500" required />
+              <button disabled={loading} className="w-full bg-indigo-600 py-6 rounded-2xl font-black text-white uppercase tracking-[0.3em] text-[10px] active:scale-95 transition-all">
+                {loading ? 'Processando...' : authMode === 'LOGIN' ? 'Acessar Painel' : 'Criar Conta'}
               </button>
             </form>
-            <button onClick={() => setAuthMode(authMode === 'LOGIN' ? 'SIGNUP' : 'LOGIN')} className="mt-8 text-[10px] text-slate-500 font-black uppercase tracking-widest">
+            <button onClick={() => setAuthMode(authMode === 'LOGIN' ? 'SIGNUP' : 'LOGIN')} className="mt-8 text-[10px] text-slate-500 font-black uppercase tracking-widest hover:text-white transition-colors">
               {authMode === 'LOGIN' ? 'Não tem conta? Registre-se' : 'Já tem conta? Entre'}
             </button>
         </div>
@@ -261,48 +228,79 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                <p className="text-indigo-400 text-[10px] font-black uppercase tracking-[0.3em] mb-2">Workspace Premium</p>
                <h1 className="text-4xl font-black text-white tracking-tighter uppercase">Painel</h1>
             </div>
-            <button onClick={() => supabase.auth.signOut().then(() => setSession(null))} className="glass px-5 py-3 rounded-2xl text-red-500/40 font-black text-[10px] uppercase tracking-widest hover:text-red-500">Sair</button>
+            <button onClick={() => supabase.auth.signOut().then(() => setSession(null))} className="glass px-5 py-3 rounded-2xl text-red-500/40 font-black text-[10px] uppercase tracking-widest hover:text-red-500 transition-all">Sair</button>
           </div>
 
           <div className="flex gap-2 p-2 glass rounded-[2rem] mb-12 overflow-x-auto no-scrollbar shadow-inner">
             {(['LINKS', 'NEWS', 'PROFILE'] as const).map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-grow min-w-[110px] py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}>{tab === 'LINKS' ? 'Links' : tab === 'NEWS' ? 'Notícias' : 'Perfil'}</button>
+              <button 
+                key={tab} 
+                onClick={() => setActiveTab(tab)} 
+                className={`flex-grow min-w-[110px] py-4 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-xl' : 'text-slate-500 hover:text-white'}`}
+              >
+                {tab === 'LINKS' ? 'Links' : tab === 'NEWS' ? 'Notícias' : 'Perfil'}
+              </button>
             ))}
           </div>
 
           <div className="space-y-10">
             {activeTab === 'PROFILE' && (
               <div className="space-y-8 animate-in slide-in-from-right-8 duration-600">
-                <div className="glass p-8 rounded-[3rem] border-indigo-500/20 bg-indigo-500/[0.02]">
-                  <div className="flex items-center gap-3 mb-6 ml-2">
-                    <div className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></div>
-                    <span className="text-[10px] font-black uppercase tracking-[0.3em] text-indigo-400">Seu Link Digital</span>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-center gap-4">
-                    <div className="flex-grow w-full bg-slate-950 p-5 rounded-2xl border border-white/5 shadow-inner overflow-hidden">
-                       <p className="text-slate-400 font-mono text-[11px] truncate">{getPublicUrl()}</p>
-                    </div>
-                    <div className="flex gap-2 w-full sm:w-auto">
-                      <button onClick={copyToClipboard} className="flex-grow sm:flex-none glass px-6 py-4 rounded-2xl flex items-center justify-center gap-3 hover:bg-white/10 transition-all active:scale-95 group">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400 group-hover:scale-110 transition-transform"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                        <span className="text-[10px] font-black uppercase tracking-widest text-white">Copiar</span>
-                      </button>
-                      <button onClick={handleShare} className="glass w-14 h-14 flex items-center justify-center rounded-2xl hover:bg-indigo-600/20 active:scale-95 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"></path><polyline points="16 6 12 2 8 6"></polyline><line x1="12" y1="2" x2="12" y2="15"></line></svg>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
                 <div className="glass p-10 rounded-[3rem] space-y-10 border-white/5">
-                  {/* Edição de Perfil... (Omitido para brevidade, mantém a lógica anterior) */}
                   <div className="grid grid-cols-1 gap-8">
-                    <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value})} placeholder="slug-da-url" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-bold text-white shadow-inner outline-none" />
-                    <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Nome Público" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-bold text-white shadow-inner outline-none" />
-                    <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio de Autoridade" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-medium text-slate-300 h-36 resize-none shadow-inner outline-none" />
+                    {/* Upload de Avatar e Mascote */}
+                    <div className="flex flex-col sm:flex-row gap-6">
+                      <div className="flex-1 space-y-4">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Avatar de Perfil</label>
+                        <div className="flex items-center gap-4">
+                          <img src={profile.avatar_url} className="w-16 h-16 rounded-full object-cover border border-indigo-500/30" alt="Avatar" />
+                          <input 
+                            type="file" 
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const url = await handleFileUpload(file, 'avatars');
+                                if (url) setProfile({...profile, avatar_url: url});
+                              }
+                            }}
+                            className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-indigo-600/20 file:text-indigo-400 hover:file:bg-indigo-600/30"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex-1 space-y-4">
+                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Mascote Flutuante</label>
+                        <div className="flex items-center gap-4">
+                          <img src={profile.mascot_url} className="w-16 h-16 rounded-xl object-contain bg-slate-900 border border-indigo-500/30 p-2" alt="Mascote" />
+                          <input 
+                            type="file" 
+                            onChange={async (e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const url = await handleFileUpload(file, 'mascots');
+                                if (url) setProfile({...profile, mascot_url: url});
+                              }
+                            }}
+                            className="text-xs text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:uppercase file:bg-indigo-600/20 file:text-indigo-400 hover:file:bg-indigo-600/30"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Slug da URL (@usuario)</label>
+                       <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value})} placeholder="ex: meunome" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-bold text-white shadow-inner outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Nome de Exibição</label>
+                       <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Seu Nome ou Marca" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-bold text-white shadow-inner outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Biografia</label>
+                       <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Uma frase impactante..." className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-medium text-slate-300 h-32 resize-none shadow-inner outline-none focus:ring-2 focus:ring-indigo-500" />
+                    </div>
                   </div>
                   <button disabled={loading} onClick={saveProfile} className="w-full bg-indigo-600 hover:bg-indigo-500 py-7 rounded-[2.5rem] font-black text-white text-[12px] uppercase tracking-[0.4em] shadow-2xl transition-all active:scale-95">
-                    {loading ? 'Salvando...' : 'Salvar Perfil'}
+                    {loading ? 'Sincronizando...' : 'Salvar Perfil'}
                   </button>
                 </div>
               </div>
@@ -310,34 +308,117 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
 
             {activeTab === 'LINKS' && (
               <div className="space-y-6 animate-in slide-in-from-right-8 duration-600">
-                {/* Lógica de Links Mantida... */}
-                {links.map(l => (
-                   <div key={l.id} className="glass p-6 rounded-3xl flex items-center justify-between border border-white/5">
-                      <div className="flex items-center gap-4">
-                        <img src={l.icon_url} className="w-12 h-12 rounded-xl object-contain bg-slate-900 p-2" alt="" />
-                        <span className="text-white font-bold">{l.title}</span>
+                <button 
+                  onClick={() => setShowAddLinkForm(!showAddLinkForm)}
+                  className="w-full glass p-6 rounded-3xl flex items-center justify-center gap-4 text-indigo-400 hover:bg-indigo-600/10 transition-all border-dashed border-2 border-indigo-500/20"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                  <span className="font-black text-[10px] uppercase tracking-widest">Adicionar Novo Link</span>
+                </button>
+
+                {showAddLinkForm && (
+                  <form onSubmit={addLink} className="glass p-8 rounded-[2.5rem] space-y-6 border-indigo-500/20 animate-in slide-in-from-top-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <input placeholder="Título (ex: WhatsApp)" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm font-bold outline-none" required />
+                      <input placeholder="URL Completa (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm outline-none" required />
+                    </div>
+                    <input placeholder="Breve descrição" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none" />
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                      <input placeholder="Ícone URL" value={newLink.icon_url} onChange={e => setNewLink({...newLink, icon_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none" />
+                      <input 
+                        type="file" 
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = await handleFileUpload(file, 'icons');
+                            if (url) setNewLink({...newLink, icon_url: url});
+                          }
+                        }}
+                        className="text-[10px] text-slate-500"
+                      />
+                    </div>
+                    <button className="w-full bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl">Criar Link</button>
+                  </form>
+                )}
+
+                <div className="space-y-4">
+                  {links.map(l => (
+                    <div key={l.id} className="glass p-5 rounded-3xl flex items-center justify-between group">
+                      <div className="flex items-center gap-5">
+                        <img src={l.icon_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-14 h-14 rounded-2xl object-contain bg-slate-900 border border-white/5 p-2" alt="" />
+                        <div>
+                          <p className="text-white font-black text-sm uppercase tracking-tight">{l.title}</p>
+                          <p className="text-slate-500 text-[10px] font-bold tracking-widest">{l.click_count || 0} CLIQUES</p>
+                        </div>
                       </div>
-                      <button onClick={() => deleteLink(l.id)} className="text-red-500/50 hover:text-red-500 p-2">Excluir</button>
-                   </div>
-                ))}
+                      <div className="flex gap-2">
+                        <button onClick={() => deleteLink(l.id)} className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
             {activeTab === 'NEWS' && (
               <div className="space-y-6 animate-in slide-in-from-right-8 duration-600">
-                {/* Lógica de News Mantida... */}
-                {news.map(n => (
-                   <div key={n.id} className="glass p-6 rounded-3xl flex items-center justify-between border border-white/5">
-                      <div className="flex items-center gap-4">
-                        <img src={n.image_url} className="w-12 h-12 rounded-xl object-cover" alt="" />
-                        <span className="text-white font-bold truncate max-w-[150px]">{n.title}</span>
+                <button 
+                  onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); setNewPost({title:'', content:'', image_url:''}); }}
+                  className="w-full glass p-6 rounded-3xl flex items-center justify-center gap-4 text-indigo-400 hover:bg-indigo-600/10 transition-all border-dashed border-2 border-indigo-500/20"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
+                  <span className="font-black text-[10px] uppercase tracking-widest">Postar Nova Novidade</span>
+                </button>
+
+                {showAddNewsForm && (
+                  <form onSubmit={handleSavePost} className="glass p-10 rounded-[2.5rem] space-y-6 border-indigo-500/20 animate-in slide-in-from-top-4">
+                    <h3 className="text-white font-black text-sm uppercase tracking-[0.2em]">{editingPostId ? 'Editar Postagem' : 'Nova Postagem'}</h3>
+                    <input placeholder="Título da Notícia" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm font-bold outline-none" required />
+                    <textarea placeholder="Conteúdo da postagem..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm h-40 resize-none outline-none" required />
+                    <div className="flex flex-col sm:flex-row items-center gap-4">
+                       <input placeholder="Imagem URL" value={newPost.image_url} onChange={e => setNewPost({...newPost, image_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none" />
+                       <input 
+                        type="file" 
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const url = await handleFileUpload(file, 'news');
+                            if (url) setNewPost({...newPost, image_url: url});
+                          }
+                        }}
+                        className="text-[10px] text-slate-500"
+                      />
+                    </div>
+                    <div className="flex gap-4">
+                      <button type="button" onClick={() => setShowAddNewsForm(false)} className="flex-1 bg-white/5 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest">Cancelar</button>
+                      <button className="flex-[2] bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl">Publicar</button>
+                    </div>
+                  </form>
+                )}
+
+                <div className="space-y-4">
+                  {news.map(n => (
+                    <div key={n.id} className="glass p-5 rounded-3xl flex items-center justify-between border border-white/5 group">
+                      <div className="flex items-center gap-5 overflow-hidden">
+                        <img src={n.image_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-16 h-16 rounded-2xl object-cover border border-white/10" alt="" />
+                        <div className="min-w-0">
+                          <p className="text-white font-black text-sm uppercase tracking-tight truncate">{n.title}</p>
+                          <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</p>
+                        </div>
                       </div>
                       <div className="flex gap-2">
-                        <button onClick={() => startEditingNews(n)} className="text-indigo-400 p-2">Editar</button>
-                        <button onClick={() => deletePost(n.id)} className="text-red-500/50 p-2">Excluir</button>
+                        <button onClick={() => startEditingNews(n)} className="w-10 h-10 rounded-xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button onClick={() => deletePost(n.id)} className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                        </button>
                       </div>
-                   </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
           </div>
