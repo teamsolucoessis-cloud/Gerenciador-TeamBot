@@ -42,6 +42,11 @@
         }
         .animate-mascot { animation: mascot-float 5s ease-in-out infinite; }
         .icon-glow { filter: drop-shadow(0 0 8px rgba(79, 70, 229, 0.4)); }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
     </style>
 
     <script type="importmap">
@@ -61,11 +66,10 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator) {
+      // Registro condicional para evitar erro de origem no Studio
+      if ('serviceWorker' in navigator && !window.location.host.includes('goog')) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js', { scope: '/' })
-            .then(reg => console.log('SW Registered'))
-            .catch(err => console.log('SW Failed', err));
+          navigator.serviceWorker.register('/sw.js').catch(() => {});
         });
       }
     </script>

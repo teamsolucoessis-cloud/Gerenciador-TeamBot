@@ -2,16 +2,22 @@
 import { createClient } from '@supabase/supabase-js';
 
 /**
- * Sênior, agora o código está 100% blindado para repositórios públicos.
- * As chaves são lidas exclusivamente das variáveis de ambiente (Environment Variables).
- * Se as variáveis não estiverem configuradas, o cliente não será inicializado com dados reais.
+ * Ajuste de Estabilidade:
+ * O cliente agora verifica se as chaves existem antes de inicializar.
+ * Isso evita o erro "supabaseUrl is required" que causa tela branca.
  */
 
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || ''; 
 const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("Atenção: Chaves do Supabase não encontradas. Verifique as variáveis de ambiente no Netlify.");
-}
+// Se as chaves estiverem vazias, criamos um proxy ou apenas não exportamos o cliente real
+// para evitar que o app quebre no ambiente de preview do Studio.
+export const supabase = (supabaseUrl && supabaseAnonKey) 
+  ? createClient(supabaseUrl, supabaseAnonKey)
+  : new Proxy({} as any, {
+      get: () => () => ({ data: null, error: { message: "Supabase não configurado" } })
+    });
 
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.warn("TeamBot: Chaves do Supabase ausentes. Configure as variáveis de ambiente.");
+}
