@@ -17,6 +17,7 @@
     <meta property="og:image" content="https://i.ibb.co/v4pXp2F/teambot-mascot.png">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#020617">
+    <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -64,10 +65,6 @@
         }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
     </style>
 <script type="importmap">
 {
@@ -83,5 +80,17 @@
 <body class="gradient-bg min-h-screen">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+      // Registro do Service Worker para PWA
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').then(reg => {
+            console.log('TeamBot PWA ativo!', reg.scope);
+          }).catch(err => {
+            console.log('PWA Error:', err);
+          });
+        });
+      }
+    </script>
 </body>
 </html>

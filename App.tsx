@@ -14,7 +14,7 @@ const INITIAL_PROFILE: Profile = {
   id: 'default',
   name: 'TeamBot Master',
   bio: 'Seu assistente inteligente para centralizar conexões premium e ferramentas de alta tecnologia.',
-  avatar_url: 'https://picsum.photos/400/400?random=1',
+  avatar_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png',
   mascot_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png',
   slug: 'teambot'
 };
@@ -38,8 +38,9 @@ const App: React.FC = () => {
     try {
       let targetUserId = null;
 
+      // Prioridade: Se houver um SLUG na URL, busca esse usuário
       if (slug) {
-        const { data: profData } = await supabase
+        const { data: profData, error: profError } = await supabase
           .from('profiles')
           .select('*')
           .eq('slug', slug.toLowerCase().trim())
@@ -49,11 +50,13 @@ const App: React.FC = () => {
           setProfile(profData);
           targetUserId = profData.id;
         } else {
+          // Se não achou o slug mas estamos em HOME, pode ser que o usuário só abriu a raiz
           setUserNotFound(true);
           setLoading(false);
           return;
         }
       } else {
+        // Se não houver slug, verifica se há alguém logado para mostrar o próprio perfil
         const { data: { session } } = await supabase.auth.getSession();
         if (session) {
           const { data: profData } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
@@ -61,6 +64,9 @@ const App: React.FC = () => {
             setProfile(profData);
             targetUserId = profData.id;
           }
+        } else {
+          // Fallback final: Carrega o perfil default do sistema se houver (opcional)
+          // Aqui mantemos o INITIAL_PROFILE
         }
       }
 
