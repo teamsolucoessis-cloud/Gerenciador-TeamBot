@@ -12,6 +12,7 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
   const latestNews = news.length > 0 ? news[0] : null;
+  const DEFAULT_IMAGE = "https://i.ibb.co/v4pXp2F/teambot-mascot.png";
 
   const handleLinkClick = async (linkId: string) => {
     try {
@@ -19,6 +20,10 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
     } catch (e) {
       console.error("Click track error", e);
     }
+  };
+
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    e.currentTarget.src = DEFAULT_IMAGE;
   };
 
   return (
@@ -30,18 +35,22 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
           <div className="absolute inset-0 bg-indigo-500/30 blur-[40px] rounded-full scale-150 animate-pulse"></div>
           <div className="relative z-10 p-1 bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-500 rounded-full shadow-[0_0_30px_rgba(79,70,229,0.5)]">
             <img 
-              src={profile.avatar_url} 
+              src={profile.avatar_url || DEFAULT_IMAGE} 
               alt={profile.name} 
+              onError={handleImageError}
               className="w-32 h-32 rounded-full object-cover border-4 border-slate-950"
             />
           </div>
-          {profile.mascot_url && (
-            <div className="absolute -top-4 -right-10 w-24 h-24 z-20 animate-mascot drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
-              <img src={profile.mascot_url} alt="Mascot" className="w-full h-full object-contain" />
-            </div>
-          )}
+          <div className="absolute -top-4 -right-10 w-24 h-24 z-20 animate-mascot drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
+            <img 
+              src={profile.mascot_url || DEFAULT_IMAGE} 
+              alt="Mascot" 
+              onError={handleImageError}
+              className="w-full h-full object-contain" 
+            />
+          </div>
         </div>
-        <h1 className="text-3xl font-black mt-8 text-white tracking-tight drop-shadow-sm">{profile.name}</h1>
+        <h1 className="text-3xl font-black mt-8 text-white tracking-tight drop-shadow-sm uppercase">{profile.name}</h1>
         <div className="max-w-md mx-auto">
           <p className="text-slate-400 text-sm mt-3 px-8 leading-relaxed font-medium">{profile.bio}</p>
         </div>
@@ -56,7 +65,12 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
           >
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 blur-3xl -z-10 rounded-full group-hover:bg-indigo-600/10 transition-colors"></div>
             <div className="relative shrink-0">
-               <img src={latestNews.image_url} className="w-20 h-20 rounded-2xl object-cover border border-white/10" alt="" />
+               <img 
+                 src={latestNews.image_url || DEFAULT_IMAGE} 
+                 onError={handleImageError}
+                 className="w-20 h-20 rounded-2xl object-cover border border-white/10" 
+                 alt="" 
+               />
                <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center border-2 border-slate-950">
                   <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
                </div>
@@ -67,11 +81,6 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
               </div>
               <h3 className="text-white font-bold text-lg leading-tight group-hover:text-indigo-300 transition-colors line-clamp-1">{latestNews.title}</h3>
               <p className="text-slate-500 text-xs mt-1 line-clamp-1">{latestNews.content}</p>
-            </div>
-            <div className="bg-white/5 w-10 h-10 rounded-full flex items-center justify-center shrink-0 group-hover:bg-indigo-600/20 group-hover:scale-110 transition-all">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-slate-400 group-hover:text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M9 5l7 7-7 7" />
-              </svg>
             </div>
           </button>
         </section>
@@ -90,19 +99,19 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
             className="glass rounded-[1.5rem] p-5 flex items-center gap-5 link-card group active:scale-[0.97]"
           >
             <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 overflow-hidden shrink-0 flex items-center justify-center p-2 group-hover:bg-slate-800 transition-colors">
-              <img src={link.icon_url} alt="" className="w-full h-full object-contain" />
+              <img 
+                src={link.icon_url || DEFAULT_IMAGE} 
+                onError={handleImageError}
+                alt="" 
+                className="w-full h-full object-contain" 
+              />
             </div>
             <div className="flex-grow min-w-0">
               <h3 className="text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors">{link.title}</h3>
               <p className="text-slate-500 text-sm line-clamp-1 font-medium">{link.description}</p>
             </div>
-            <div className="flex flex-col items-end gap-2 pr-2">
-              <div className="text-slate-700 group-hover:text-indigo-500/50 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
-              </div>
-              {link.click_count > 0 && (
-                <span className="text-[10px] font-bold text-slate-600 bg-white/5 px-2 py-1 rounded-md">+{link.click_count}</span>
-              )}
+            <div className="pr-2 text-slate-700 group-hover:text-indigo-500/50 transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
             </div>
           </a>
         ))}
