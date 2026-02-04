@@ -10,12 +10,13 @@ import Admin from './pages/Admin';
 import NewsList from './pages/NewsList';
 import { supabase } from './supabaseClient';
 
+// Perfil Master Oficial para o link público sem dados no banco
 const INITIAL_PROFILE: Profile = {
   id: 'default',
   name: 'TeamBot Master',
   bio: 'Seu assistente inteligente para centralizar conexões premium e ferramentas de alta tecnologia.',
-  avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=TeamBot&backgroundColor=4f46e5',
-  mascot_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png',
+  avatar_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png', // Logo da marca como avatar default
+  mascot_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png', // Logo da marca como mascote flutuante
   slug: 'teambot'
 };
 
