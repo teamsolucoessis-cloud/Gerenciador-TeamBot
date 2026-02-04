@@ -12,7 +12,7 @@ interface HomeProps {
 
 const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
   const latestNews = news.length > 0 ? news[0] : null;
-  const DEFAULT_IMAGE = "https://i.ibb.co/v4pXp2F/teambot-mascot.png";
+  const GET_FALLBACK = (seed: string) => `https://api.dicebear.com/7.x/bottts/svg?seed=${seed}&backgroundColor=4f46e5`;
 
   const handleLinkClick = async (linkId: string) => {
     try {
@@ -22,8 +22,8 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
     }
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    e.currentTarget.src = DEFAULT_IMAGE;
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>, seed: string) => {
+    e.currentTarget.src = GET_FALLBACK(seed);
   };
 
   return (
@@ -35,17 +35,17 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
           <div className="absolute inset-0 bg-indigo-500/30 blur-[40px] rounded-full scale-150 animate-pulse"></div>
           <div className="relative z-10 p-1 bg-gradient-to-br from-indigo-500 via-purple-500 to-indigo-500 rounded-full shadow-[0_0_30px_rgba(79,70,229,0.5)]">
             <img 
-              src={profile.avatar_url || DEFAULT_IMAGE} 
+              src={profile.avatar_url || GET_FALLBACK(profile.name)} 
               alt={profile.name} 
-              onError={handleImageError}
+              onError={(e) => handleImageError(e, profile.name)}
               className="w-32 h-32 rounded-full object-cover border-4 border-slate-950"
             />
           </div>
           <div className="absolute -top-4 -right-10 w-24 h-24 z-20 animate-mascot drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">
             <img 
-              src={profile.mascot_url || DEFAULT_IMAGE} 
+              src={profile.mascot_url || GET_FALLBACK("mascot")} 
               alt="Mascot" 
-              onError={handleImageError}
+              onError={(e) => handleImageError(e, "mascot")}
               className="w-full h-full object-contain" 
             />
           </div>
@@ -66,8 +66,8 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
             <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 blur-3xl -z-10 rounded-full group-hover:bg-indigo-600/10 transition-colors"></div>
             <div className="relative shrink-0">
                <img 
-                 src={latestNews.image_url || DEFAULT_IMAGE} 
-                 onError={handleImageError}
+                 src={latestNews.image_url || GET_FALLBACK("news")} 
+                 onError={(e) => handleImageError(e, "news")}
                  className="w-20 h-20 rounded-2xl object-cover border border-white/10" 
                  alt="" 
                />
@@ -100,8 +100,8 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
           >
             <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 overflow-hidden shrink-0 flex items-center justify-center p-2 group-hover:bg-slate-800 transition-colors">
               <img 
-                src={link.icon_url || DEFAULT_IMAGE} 
-                onError={handleImageError}
+                src={link.icon_url || GET_FALLBACK(link.title)} 
+                onError={(e) => handleImageError(e, link.title)}
                 alt="" 
                 className="w-full h-full object-contain" 
               />
@@ -118,8 +118,8 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
       </section>
 
       {links.length === 0 && (
-        <div className="mt-12 glass p-10 rounded-[2rem] text-center w-full">
-          <p className="text-slate-500 italic text-sm">Nenhum link ativo no momento.</p>
+        <div className="mt-12 glass p-10 rounded-[2rem] text-center w-full border border-white/5">
+          <p className="text-slate-500 italic text-sm font-medium tracking-wide">Nenhuma conexão ativa no momento.</p>
         </div>
       )}
     </div>

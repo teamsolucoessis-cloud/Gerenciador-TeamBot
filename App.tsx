@@ -14,7 +14,7 @@ const INITIAL_PROFILE: Profile = {
   id: 'default',
   name: 'TeamBot Master',
   bio: 'Seu assistente inteligente para centralizar conexões premium e ferramentas de alta tecnologia.',
-  avatar_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png',
+  avatar_url: 'https://api.dicebear.com/7.x/bottts/svg?seed=TeamBot&backgroundColor=4f46e5',
   mascot_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png',
   slug: 'teambot'
 };
@@ -40,11 +40,13 @@ const App: React.FC = () => {
         if (data) {
           setProfile(data);
           targetUserId = data.id;
-        } else {
+        } else if (error && error.message !== "Supabase não configurado") {
           setUserNotFound(true);
         }
       } else {
-        const { data: { session } } = await supabase.auth.getSession();
+        const sessionRes = await supabase.auth.getSession();
+        const session = sessionRes?.data?.session;
+        
         if (session) {
           const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
           if (data) {
@@ -63,7 +65,7 @@ const App: React.FC = () => {
         if (nRes.data) setNews(nRes.data);
       }
     } catch (err) {
-      console.error(err);
+      console.error("Fetch error:", err);
     } finally {
       setLoading(false);
     }
@@ -102,7 +104,7 @@ const App: React.FC = () => {
       />
       <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onNavigate={navigateTo} currentView={currentView} />
 
-      <main className={`flex-grow pt-20 pb-24 px-4 max-w-2xl mx-auto w-full transition-opacity ${loading && currentView === 'HOME' ? 'opacity-50' : 'opacity-100'}`}>
+      <main className={`flex-grow pt-20 pb-24 px-4 max-w-2xl mx-auto w-full transition-opacity ${loading && !links.length ? 'opacity-50' : 'opacity-100'}`}>
         {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} />}
         {currentView === 'NEWS_LIST' && <NewsList news={news} onBack={() => navigateTo('HOME')} />}
         {currentView === 'PRIVACY' && <Privacy onBack={() => navigateTo('HOME')} />}

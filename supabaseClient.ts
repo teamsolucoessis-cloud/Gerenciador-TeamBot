@@ -1,23 +1,47 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-/**
- * Ajuste de Estabilidade:
- * O cliente agora verifica se as chaves existem antes de inicializar.
- * Isso evita o erro "supabaseUrl is required" que causa tela branca.
- */
-
 const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || ''; 
 const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
 
-// Se as chaves estiverem vazias, criamos um proxy ou apenas não exportamos o cliente real
-// para evitar que o app quebre no ambiente de preview do Studio.
+// Mock robusto para evitar erros tipo "is not a function" em chamadas aninhadas
+const createMockClient = () => {
+  const mockResponse = { data: null, error: null };
+  const mockAsyncResponse = async () => mockResponse;
+
+  const chain = {
+    select: () => chain,
+    insert: () => chain,
+    update: () => chain,
+    delete: () => chain,
+    eq: () => chain,
+    single: mockAsyncResponse,
+    order: mockAsyncResponse,
+    upsert: mockAsyncResponse,
+    upload: mockAsyncResponse,
+    getPublicUrl: () => ({ data: { publicUrl: "" } }),
+  };
+
+  return {
+    auth: {
+      getSession: async () => ({ data: { session: null }, error: null }),
+      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
+      signInWithPassword: async () => ({ data: null, error: new Error("Supabase não configurado") }),
+      signUp: async () => ({ data: null, error: new Error("Supabase não configurado") }),
+      signOut: async () => ({ data: null, error: null }),
+    },
+    from: () => chain,
+    storage: {
+      from: () => chain
+    },
+    rpc: mockAsyncResponse,
+  } as any;
+};
+
 export const supabase = (supabaseUrl && supabaseAnonKey) 
   ? createClient(supabaseUrl, supabaseAnonKey)
-  : new Proxy({} as any, {
-      get: () => () => ({ data: null, error: { message: "Supabase não configurado" } })
-    });
+  : createMockClient();
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.warn("TeamBot: Chaves do Supabase ausentes. Configure as variáveis de ambiente.");
+  console.warn("TeamBot: Chaves do Supabase ausentes. Configure as variáveis de ambiente VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY no seu provedor de hospedagem.");
 }
