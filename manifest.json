@@ -1,0 +1,17 @@
+
+{
+  "short_name": "TeamBot",
+  "name": "Gerenciador TeamBot Premium",
+  "icons": [
+    {
+      "src": "https://i.ibb.co/v4pXp2F/teambot-mascot.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#020617",
+  "background_color": "#020617"
+}

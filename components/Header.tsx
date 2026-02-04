@@ -4,9 +4,13 @@ import React from 'react';
 interface HeaderProps {
   onMenuClick: () => void;
   onAdminClick: () => void;
+  mascotUrl?: string;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick, mascotUrl }) => {
+  // Fallback para a mascote caso não venha do perfil
+  const defaultMascot = "https://i.ibb.co/v4pXp2F/teambot-mascot.png";
+
   return (
     <header className="fixed top-0 left-0 right-0 h-16 bg-slate-950/60 backdrop-blur-xl border-b border-white/5 z-40 px-6 flex items-center justify-between">
       <button 
@@ -21,12 +25,14 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick }) => {
       </button>
 
       <div className="flex items-center gap-3 select-none">
-        <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(79,70,229,0.4)]">
-           <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="white">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+        <div className="w-9 h-9 bg-indigo-600/10 rounded-xl flex items-center justify-center border border-indigo-500/30 overflow-hidden icon-glow">
+           <img 
+             src={mascotUrl || defaultMascot} 
+             alt="Logo" 
+             className="w-full h-full object-contain p-1"
+           />
         </div>
-        <span className="font-extrabold text-sm tracking-[0.2em] uppercase text-white">TeamBot</span>
+        <span className="font-extrabold text-sm tracking-[0.2em] uppercase text-white hidden sm:block">TeamBot</span>
       </div>
 
       <button 
