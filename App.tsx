@@ -9,14 +9,14 @@ import Privacy from './pages/Privacy';
 import Admin from './pages/Admin';
 import NewsList from './pages/NewsList';
 import { supabase } from './supabaseClient';
+import { BRAND_CONFIG } from './brand';
 
-// Perfil Master Oficial para o link público sem dados no banco
 const INITIAL_PROFILE: Profile = {
   id: 'default',
   name: 'TeamBot Master',
   bio: 'Seu assistente inteligente para centralizar conexões premium e ferramentas de alta tecnologia.',
-  avatar_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png', // Logo da marca como avatar default
-  mascot_url: 'https://i.ibb.co/v4pXp2F/teambot-mascot.png', // Logo da marca como mascote flutuante
+  avatar_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
+  mascot_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   slug: 'teambot'
 };
 
