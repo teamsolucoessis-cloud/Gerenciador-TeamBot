@@ -1,5 +1,4 @@
-
-const CACHE_NAME = 'teambot-v4';
+const CACHE_NAME = 'teambot-v5';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -10,7 +9,6 @@ const ASSETS_TO_CACHE = [
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      // Usamos addAll, mas com tratamento individual para não quebrar o cache todo se um falhar
       return Promise.allSettled(
         ASSETS_TO_CACHE.map(url => cache.add(url))
       );
@@ -30,7 +28,16 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Ignorar requisições que não sejam GET ou que sejam de extensões de navegador
+  // Estratégia especial para navegação (evita o 404 no refresh)
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        return caches.match('/index.html') || caches.match('/');
+      })
+    );
+    return;
+  }
+
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
 
   event.respondWith(
@@ -38,16 +45,14 @@ self.addEventListener('fetch', (event) => {
       if (cachedResponse) return cachedResponse;
 
       return fetch(event.request).then((networkResponse) => {
-        // Cachear apenas respostas válidas
         if (networkResponse && networkResponse.status === 200) {
           const cacheCopy = networkResponse.clone();
           caches.open(CACHE_NAME).then((cache) => cache.put(event.request, cacheCopy));
         }
         return networkResponse;
       }).catch(() => {
-        // Se falhar rede e não tiver cache, tenta retornar o index (para SPAs)
         if (event.request.mode === 'navigate') {
-          return caches.match('/');
+          return caches.match('/index.html');
         }
       });
     })

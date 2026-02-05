@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -6,6 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gerenciador TeamBot | Central Premium</title>
     
+    <!-- Redirecionamento de SPA e Cache Control -->
+    <base href="/">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <!-- PWA Setup & Brand Assets -->
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" href="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
@@ -70,12 +75,23 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      // Registro de Service Worker otimizado para produção
+      // Registro de Service Worker com limpeza de cache agressiva para versão nova
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('TeamBot PWA: Online'))
-            .catch(err => console.log('TeamBot PWA: Offline mode only', err));
+            .then(reg => {
+              console.log('TeamBot PWA: Online');
+              // Força atualização se houver novo SW
+              reg.onupdatefound = () => {
+                const installingWorker = reg.installing;
+                installingWorker.onstatechange = () => {
+                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    window.location.reload();
+                  }
+                };
+              };
+            })
+            .catch(err => console.log('TeamBot PWA Error', err));
         });
       }
     </script>

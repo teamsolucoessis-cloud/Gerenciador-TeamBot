@@ -32,6 +32,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const [showAddLinkForm, setShowAddLinkForm] = useState(false);
   const [showAddNewsForm, setShowAddNewsForm] = useState(false);
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingLinkId, setEditingLinkId] = useState<string | null>(null);
 
   const [newLink, setNewLink] = useState({ title: '', description: '', url: '', icon_url: '' });
   const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', link_url: '' });
@@ -116,18 +117,33 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     finally { setLoading(false); }
   };
 
-  const addLink = async (e: React.FormEvent) => {
+  const handleSaveLink = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('tools').insert([{ ...newLink, user_id: session.user.id }]).select();
-      if (error) throw error;
-      setLinks([data[0], ...links]);
+      if (editingLinkId) {
+        const { error } = await supabase.from('tools').update({ ...newLink }).eq('id', editingLinkId);
+        if (error) throw error;
+        setLinks(links.map(l => l.id === editingLinkId ? { ...l, ...newLink } : l));
+        addNotification('Link atualizado!', 'success');
+      } else {
+        const { data, error } = await supabase.from('tools').insert([{ ...newLink, user_id: session.user.id }]).select();
+        if (error) throw error;
+        setLinks([data[0], ...links]);
+        addNotification('Link adicionado!', 'success');
+      }
       setNewLink({ title: '', description: '', url: '', icon_url: '' });
+      setEditingLinkId(null);
       setShowAddLinkForm(false);
-      addNotification('Link adicionado!', 'success');
     } catch (err: any) { addNotification(err.message, 'error'); }
     finally { setLoading(false); }
+  };
+
+  const startEditingLink = (l: LinkItem) => {
+    setNewLink({ title: l.title, description: l.description, url: l.url, icon_url: l.icon_url });
+    setEditingLinkId(l.id);
+    setShowAddLinkForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const handleSavePost = async (e: React.FormEvent) => {
@@ -323,25 +339,26 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             {activeTab === 'LINKS' && (
               <div className="space-y-6 animate-in slide-in-from-right-8 duration-600">
                 <button 
-                  onClick={() => setShowAddLinkForm(!showAddLinkForm)}
+                  onClick={() => { setShowAddLinkForm(!showAddLinkForm); setEditingLinkId(null); setNewLink({title:'', description:'', url:'', icon_url:''}); }}
                   className="w-full glass p-8 rounded-[2rem] flex flex-col items-center justify-center gap-3 text-indigo-400 hover:bg-indigo-600/10 transition-all border-dashed border-2 border-indigo-500/20"
                 >
                   <div className="w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                   </div>
-                  <span className="font-black text-[10px] uppercase tracking-widest">Criar Novo Link Estratégico</span>
+                  <span className="font-black text-[10px] uppercase tracking-widest">{editingLinkId ? 'Editando Link' : 'Criar Novo Link Estratégico'}</span>
                 </button>
 
                 {showAddLinkForm && (
-                  <form onSubmit={addLink} className="glass p-8 rounded-[2.5rem] space-y-6 border-indigo-500/20 animate-in slide-in-from-top-4">
+                  <form onSubmit={handleSaveLink} className="glass p-8 rounded-[2.5rem] space-y-6 border-indigo-500/20 animate-in slide-in-from-top-4">
+                    <h3 className="text-white font-black text-sm uppercase tracking-[0.2em]">{editingLinkId ? 'Sincronizar Link' : 'Novo Link'}</h3>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <input placeholder="Título (ex: WhatsApp)" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm font-bold outline-none" required />
-                      <input placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm outline-none" required />
+                      <input placeholder="Título (ex: WhatsApp)" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm font-bold outline-none border border-white/5 text-white" required />
+                      <input placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="bg-slate-950 p-5 rounded-2xl text-sm outline-none border border-white/5 text-white" required />
                     </div>
-                    <input placeholder="Descrição (opcional)" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none" />
+                    <input placeholder="Descrição (opcional)" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none border border-white/5 text-white" />
                     <div className="flex flex-col sm:flex-row items-center gap-5">
                        <div className="flex-grow w-full relative">
-                         <input placeholder="URL do Ícone" value={newLink.icon_url} onChange={e => setNewLink({...newLink, icon_url: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none pr-12" />
+                         <input placeholder="URL do Ícone" value={newLink.icon_url} onChange={e => setNewLink({...newLink, icon_url: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none pr-12 border border-white/5 text-white" />
                          {newLink.icon_url && <img src={newLink.icon_url} className="absolute right-4 top-1/2 -translate-y-1/2 w-6 h-6 rounded-lg object-contain" alt="" />}
                        </div>
                        <label className="shrink-0 bg-indigo-600/10 text-indigo-400 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:text-white transition-all w-full sm:w-auto text-center">
@@ -356,25 +373,30 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                        </label>
                     </div>
                     <div className="flex gap-4">
-                      <button type="button" onClick={() => setShowAddLinkForm(false)} className="flex-1 bg-white/5 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest">Cancelar</button>
-                      <button className="flex-[2] bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl">Adicionar Link</button>
+                      <button type="button" onClick={() => { setShowAddLinkForm(false); setEditingLinkId(null); }} className="flex-1 bg-white/5 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all text-slate-400">Cancelar</button>
+                      <button className="flex-[2] bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+                        {editingLinkId ? 'Salvar Alterações' : 'Adicionar Link'}
+                      </button>
                     </div>
                   </form>
                 )}
 
                 <div className="space-y-4">
                   {links.map(l => (
-                    <div key={l.id} className="glass p-5 rounded-[2rem] flex items-center justify-between group">
-                      <div className="flex items-center gap-5">
+                    <div key={l.id} className="glass p-5 rounded-[2rem] flex items-center justify-between group border border-white/5">
+                      <div className="flex items-center gap-5 overflow-hidden">
                         <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 overflow-hidden shrink-0 flex items-center justify-center p-2">
                           <img src={l.icon_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-full h-full object-contain" alt="" />
                         </div>
-                        <div>
-                          <p className="text-white font-black text-base uppercase tracking-tight truncate max-w-[150px] sm:max-w-xs">{l.title}</p>
+                        <div className="min-w-0">
+                          <p className="text-white font-black text-base uppercase tracking-tight truncate max-w-[120px] sm:max-w-xs">{l.title}</p>
                           <p className="text-slate-500 text-[10px] font-bold tracking-widest uppercase">{l.click_count || 0} Cliques</p>
                         </div>
                       </div>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 pr-2 shrink-0">
+                        <button onClick={() => startEditingLink(l)} className="w-12 h-12 rounded-2xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-90">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
                         <button onClick={() => deleteLink(l.id)} className="w-12 h-12 rounded-2xl bg-red-500/10 flex items-center justify-center text-red-500/60 hover:bg-red-500 hover:text-white transition-all shadow-lg active:scale-90">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
                         </button>
@@ -394,22 +416,22 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                   <div className="w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"></path></svg>
                   </div>
-                  <span className="font-black text-[10px] uppercase tracking-widest">Publicar Novo Conteúdo</span>
+                  <span className="font-black text-[10px] uppercase tracking-widest">{editingPostId ? 'Editando Post' : 'Publicar Novo Conteúdo'}</span>
                 </button>
 
                 {showAddNewsForm && (
                   <form onSubmit={handleSavePost} className="glass p-10 rounded-[2.5rem] space-y-6 border-indigo-500/20 animate-in slide-in-from-top-4">
                     <h3 className="text-white font-black text-sm uppercase tracking-[0.2em]">{editingPostId ? 'Sincronizar Edição' : 'Novo Update'}</h3>
-                    <input placeholder="Título do Post" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm font-bold outline-none border border-white/5" required />
-                    <textarea placeholder="Escreva o conteúdo estratégico aqui..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm h-44 resize-none outline-none border border-white/5" required />
+                    <input placeholder="Título do Post" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm font-bold outline-none border border-white/5 text-white" required />
+                    <textarea placeholder="Escreva o conteúdo estratégico aqui..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm h-44 resize-none outline-none border border-white/5 text-white" required />
                     
                     <div className="space-y-4">
                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Link de Destino (Saiba Mais)</label>
-                       <input placeholder="https://youtube.com/..." value={newPost.link_url} onChange={e => setNewPost({...newPost, link_url: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none border border-white/5" />
+                       <input placeholder="https://youtube.com/..." value={newPost.link_url} onChange={e => setNewPost({...newPost, link_url: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none border border-white/5 text-white" />
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center gap-5">
-                       <input placeholder="Link da Imagem Banner" value={newPost.image_url} onChange={e => setNewPost({...newPost, image_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none w-full sm:w-auto" />
+                       <input placeholder="Link da Imagem Banner" value={newPost.image_url} onChange={e => setNewPost({...newPost, image_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none w-full sm:w-auto border border-white/5 text-white" />
                        <label className="shrink-0 bg-indigo-600/10 text-indigo-400 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:text-white transition-all w-full sm:w-auto text-center">
                          Upload Banner
                          <input type="file" className="hidden" onChange={async (e) => {
@@ -422,8 +444,10 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                        </label>
                     </div>
                     <div className="flex gap-4 pt-2">
-                      <button type="button" onClick={() => setShowAddNewsForm(false)} className="flex-1 bg-white/5 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all">Cancelar</button>
-                      <button className="flex-[2] bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Publicar Agora</button>
+                      <button type="button" onClick={() => { setShowAddNewsForm(false); setEditingPostId(null); }} className="flex-1 bg-white/5 py-5 rounded-2xl font-black text-[10px] uppercase tracking-widest active:scale-95 transition-all text-slate-400">Cancelar</button>
+                      <button className="flex-[2] bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">
+                        {editingPostId ? 'Salvar Alterações' : 'Publicar Agora'}
+                      </button>
                     </div>
                   </form>
                 )}
@@ -438,7 +462,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                           <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest">{new Date(n.created_at).toLocaleDateString()}</p>
                         </div>
                       </div>
-                      <div className="flex gap-3 pr-2">
+                      <div className="flex gap-3 pr-2 shrink-0">
                         <button onClick={() => startEditingNews(n)} className="w-12 h-12 rounded-2xl bg-indigo-600/10 flex items-center justify-center text-indigo-400 hover:bg-indigo-600 hover:text-white transition-all shadow-lg active:scale-90">
                           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         </button>
