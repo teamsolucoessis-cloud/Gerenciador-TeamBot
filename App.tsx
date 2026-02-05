@@ -21,10 +21,16 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  // Inicializa a view com base no path para evitar 404 visual ao recarregar /admin
-  const [currentView, setCurrentView] = useState<ViewType>(
-    window.location.pathname.includes('/admin') ? 'ADMIN' : 'HOME'
-  );
+  // Inicialização de rota mais robusta
+  const getInitialView = (): ViewType => {
+    const path = window.location.pathname;
+    if (path.includes('/admin')) return 'ADMIN';
+    if (path.includes('/privacidade')) return 'PRIVACY';
+    if (path.includes('/novidades')) return 'NEWS_LIST';
+    return 'HOME';
+  };
+
+  const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
   const [links, setLinks] = useState<LinkItem[]>([]);
@@ -77,13 +83,18 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchData();
-    const handlePop = (e: any) => setCurrentView(e.state?.view || 'HOME');
+    const handlePop = (e: any) => {
+      if (e.state?.view) {
+        setCurrentView(e.state.view);
+      } else {
+        setCurrentView(getInitialView());
+      }
+    };
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
   }, []);
 
   const navigateTo = (view: ViewType) => {
-    // Agora mapeamos corretamente as URLs para o navegador não se perder
     const paths: Record<ViewType, string> = {
       'HOME': '/',
       'ADMIN': '/admin',
@@ -91,7 +102,12 @@ const App: React.FC = () => {
       'NEWS_LIST': '/novidades'
     };
     
-    window.history.pushState({ view }, '', paths[view]);
+    // Mantém o parâmetro 'u' na URL se ele existir para não quebrar a visualização de perfil
+    const params = new URLSearchParams(window.location.search);
+    const u = params.get('u');
+    const finalPath = u ? `${paths[view]}?u=${u}` : paths[view];
+
+    window.history.pushState({ view }, '', finalPath);
     setCurrentView(view);
     setIsSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });

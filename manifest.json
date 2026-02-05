@@ -1,4 +1,3 @@
-
 {
   "short_name": "TeamBot",
   "name": "Gerenciador TeamBot Premium",
@@ -16,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
   "display": "standalone",
   "theme_color": "#020617",
   "background_color": "#020617",

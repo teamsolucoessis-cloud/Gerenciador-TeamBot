@@ -1,4 +1,5 @@
-const CACHE_NAME = 'teambot-v6';
+const CACHE_NAME = 'teambot-v7';
+const OFFLINE_URL = '/index.html';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -28,24 +29,26 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+  // Estratégia de Navegação: Network-first, fallback para index.html no cache
   if (event.request.mode === 'navigate') {
     event.respondWith(
       fetch(event.request)
         .then((response) => {
-          // Se o servidor retornar 404 (mesmo com _redirects), tenta o cache
+          // Se o servidor retornar 404 (antes do redirect propagar), usa o cache
           if (response.status === 404) {
-            return caches.match('/index.html') || response;
+            return caches.match(OFFLINE_URL);
           }
           return response;
         })
         .catch(() => {
-          // Se estiver offline ou falhar a rede, serve o index do cache
-          return caches.match('/index.html') || caches.match('/');
+          // Se estiver offline, retorna o index do cache
+          return caches.match(OFFLINE_URL);
         })
     );
     return;
   }
 
+  // Estratégia para outros recursos: Cache-first
   if (event.request.method !== 'GET' || !event.request.url.startsWith('http')) return;
 
   event.respondWith(
@@ -59,7 +62,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        // Fallback silencioso para recursos não essenciais
+        // Fallback silencioso
       });
     })
   );
