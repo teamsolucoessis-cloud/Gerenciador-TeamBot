@@ -1,4 +1,4 @@
-const CACHE_NAME = 'teambot-v5';
+const CACHE_NAME = 'teambot-v6';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -28,12 +28,20 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Estratégia especial para navegação (evita o 404 no refresh)
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match('/index.html') || caches.match('/');
-      })
+      fetch(event.request)
+        .then((response) => {
+          // Se o servidor retornar 404 (mesmo com _redirects), tenta o cache
+          if (response.status === 404) {
+            return caches.match('/index.html') || response;
+          }
+          return response;
+        })
+        .catch(() => {
+          // Se estiver offline ou falhar a rede, serve o index do cache
+          return caches.match('/index.html') || caches.match('/');
+        })
     );
     return;
   }
@@ -51,9 +59,7 @@ self.addEventListener('fetch', (event) => {
         }
         return networkResponse;
       }).catch(() => {
-        if (event.request.mode === 'navigate') {
-          return caches.match('/index.html');
-        }
+        // Fallback silencioso para recursos não essenciais
       });
     })
   );

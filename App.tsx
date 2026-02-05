@@ -21,7 +21,10 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  const [currentView, setCurrentView] = useState<ViewType>('HOME');
+  // Inicializa a view com base no path para evitar 404 visual ao recarregar /admin
+  const [currentView, setCurrentView] = useState<ViewType>(
+    window.location.pathname.includes('/admin') ? 'ADMIN' : 'HOME'
+  );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
   const [links, setLinks] = useState<LinkItem[]>([]);
@@ -80,7 +83,15 @@ const App: React.FC = () => {
   }, []);
 
   const navigateTo = (view: ViewType) => {
-    window.history.pushState({ view }, '', view === 'HOME' ? '/' : undefined);
+    // Agora mapeamos corretamente as URLs para o navegador não se perder
+    const paths: Record<ViewType, string> = {
+      'HOME': '/',
+      'ADMIN': '/admin',
+      'PRIVACY': '/privacidade',
+      'NEWS_LIST': '/novidades'
+    };
+    
+    window.history.pushState({ view }, '', paths[view]);
     setCurrentView(view);
     setIsSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
