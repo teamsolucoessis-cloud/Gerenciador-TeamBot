@@ -26,6 +26,12 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
     e.currentTarget.src = GET_FALLBACK(seed);
   };
 
+  // Função para limitar caracteres
+  const truncateText = (text: string, limit: number) => {
+    if (text.length <= limit) return text;
+    return text.slice(0, limit) + "...";
+  };
+
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in slide-in-from-bottom-6 duration-1000">
       
@@ -56,85 +62,106 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         </div>
       </section>
 
-      {/* Latest News Card - Estilo Newsfeed Premium */}
+      {/* Latest News Card - Layout Vertical Premium */}
       {latestNews && (
         <section className="w-full mb-12 px-2">
+          <div className="flex items-center gap-3 mb-6 px-4">
+            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
+            </div>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Última Novidade</h2>
+          </div>
+
           <button 
             onClick={() => onNavigate('NEWS_LIST')}
-            className="w-full glass-premium rounded-[2.5rem] p-6 flex items-center gap-6 hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shimmer-effect"
+            className="w-full glass-premium rounded-[2.5rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shimmer-effect shadow-2xl"
           >
-            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-600/10 blur-[80px] -z-10 rounded-full group-hover:bg-indigo-600/20 transition-colors duration-700"></div>
-            <div className="relative shrink-0">
-               <div className="p-1 bg-gradient-to-tr from-white/10 to-transparent rounded-2xl">
-                 <img 
-                   src={latestNews.image_url || GET_FALLBACK("news")} 
-                   onError={(e) => handleImageError(e, "news")}
-                   className="w-20 h-20 rounded-xl object-cover border border-white/5" 
-                   alt="" 
-                 />
-               </div>
-               <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-indigo-600 rounded-xl flex items-center justify-center border-2 border-slate-950 shadow-lg">
-                  <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
-               </div>
+            {/* Imagem de Topo da Notícia */}
+            <div className="h-48 w-full overflow-hidden relative border-b border-white/5">
+              <img 
+                src={latestNews.image_url || GET_FALLBACK("news")} 
+                onError={(e) => handleImageError(e, "news")}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
+                alt="" 
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
+              <div className="absolute bottom-4 left-6 flex items-center gap-2">
+                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Postado agora</span>
+              </div>
             </div>
-            <div className="flex-grow min-w-0 pr-2">
-              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2 block">Novidade em Destaque</span>
-              <h3 className="text-white font-black text-xl leading-tight group-hover:text-indigo-300 transition-colors line-clamp-1">{latestNews.title}</h3>
-              <p className="text-slate-500 text-xs mt-1.5 font-medium line-clamp-1">{latestNews.content}</p>
+
+            <div className="p-8 relative z-10">
+              <h3 className="text-white font-black text-2xl leading-tight group-hover:text-indigo-300 transition-colors mb-3 tracking-tight">
+                {latestNews.title}
+              </h3>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                {latestNews.content} {/* Notícias sem limite de caracteres */}
+              </p>
+              <div className="mt-6 flex items-center gap-2 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
+                 Ver detalhes do update
+                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </div>
             </div>
           </button>
         </section>
       )}
 
-      {/* Links List - REDESIGN PREMIUM */}
-      <section className="w-full space-y-6 px-2 pb-12">
-        <div className="flex items-center justify-between px-4 mb-6">
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Conexões Estratégicas</h2>
-          <div className="h-[1px] flex-grow ml-6 bg-gradient-to-r from-white/10 to-transparent"></div>
+      {/* Links List - Layout Vertical Premium */}
+      <section className="w-full space-y-8 px-2 pb-12">
+        <div className="flex items-center gap-3 mb-6 px-4">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          </div>
+          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Ferramentas & Aplicativos</h2>
         </div>
 
-        {links.map((link) => (
-          <a 
-            key={link.id}
-            href={link.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={() => handleLinkClick(link.id)}
-            className="glass-premium rounded-[2rem] p-5 flex items-center gap-6 group active:scale-[0.96] transition-all duration-300 hover:bg-white/[0.04] relative overflow-hidden shimmer-effect"
-          >
-            {/* Efeito visual de hover */}
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/[0.03] transition-all duration-500"></div>
-            
-            <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-2.5 group-hover:border-indigo-500/40 group-hover:scale-110 transition-all duration-500 icon-glow relative">
-              <img 
-                src={link.icon_url || GET_FALLBACK(link.title)} 
-                onError={(e) => handleImageError(e, link.title)}
-                alt="" 
-                className="w-full h-full object-contain relative z-10" 
-              />
-              <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
-            </div>
+        <div className="grid grid-cols-1 gap-8">
+          {links.map((link) => (
+            <a 
+              key={link.id}
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => handleLinkClick(link.id)}
+              className="glass-premium rounded-[2.5rem] flex flex-col group active:scale-[0.98] transition-all duration-300 hover:bg-white/[0.04] relative overflow-hidden shimmer-effect shadow-xl"
+            >
+              {/* Área de Ícone / Topo do Link */}
+              <div className="w-full h-40 bg-slate-900/50 flex items-center justify-center relative border-b border-white/5 overflow-hidden">
+                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-purple-600/10 group-hover:opacity-100 opacity-50 transition-opacity"></div>
+                <div className="relative w-20 h-20 icon-glow transform group-hover:scale-110 transition-transform duration-500">
+                  <img 
+                    src={link.icon_url || GET_FALLBACK(link.title)} 
+                    onError={(e) => handleImageError(e, link.title)}
+                    alt="" 
+                    className="w-full h-full object-contain" 
+                  />
+                </div>
+              </div>
 
-            <div className="flex-grow min-w-0 py-1 relative z-10">
-              <h3 className="text-white font-black text-lg mb-1 group-hover:text-indigo-300 transition-colors tracking-tight">{link.title}</h3>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-2 group-hover:text-slate-300 transition-colors">{link.description}</p>
-            </div>
-
-            <div className="pr-2 text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 group-hover:opacity-100">
-                <path d="M5 12h14"></path>
-                <path d="m12 5 7 7-7 7"></path>
-              </svg>
-            </div>
-          </a>
-        ))}
+              <div className="p-8 relative z-10">
+                <h3 className="text-white font-black text-2xl mb-3 group-hover:text-indigo-300 transition-colors tracking-tight">
+                  {link.title}
+                </h3>
+                <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                  {truncateText(link.description, 120)} {/* Limite de caracteres para links */}
+                </p>
+                <div className="mt-8 flex items-center justify-between">
+                   <div className="px-5 py-2.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_5px_15px_rgba(79,70,229,0.4)] group-hover:bg-indigo-500 transition-all">
+                      Acessar Agora
+                   </div>
+                   <div className="text-slate-600 group-hover:text-indigo-400 transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                   </div>
+                </div>
+              </div>
+            </a>
+          ))}
+        </div>
       </section>
 
       {links.length === 0 && (
         <div className="mt-12 glass p-12 rounded-[2.5rem] text-center w-full border border-white/5">
-          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
-             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
-          </div>
           <p className="text-slate-500 italic text-sm font-bold tracking-widest uppercase">Nenhuma conexão ativa</p>
         </div>
       )}
