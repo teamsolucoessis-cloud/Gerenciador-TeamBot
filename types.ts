@@ -5,7 +5,7 @@ export interface Profile {
   bio: string;
   avatar_url: string;
   mascot_url?: string;
-  slug?: string; // O nome único na URL (ex: @joao)
+  slug?: string;
 }
 
 export interface LinkItem {
@@ -24,6 +24,7 @@ export interface News {
   title: string;
   content: string;
   image_url: string;
+  link_url?: string; // Novo: URL de destino para o Saiba Mais
   created_at: string;
 }
 

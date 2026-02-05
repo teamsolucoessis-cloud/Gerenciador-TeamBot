@@ -34,13 +34,23 @@ const NewsList: React.FC<NewsListProps> = ({ news, onBack }) => {
             </div>
             <div className="p-8">
               <h2 className="text-xl font-black text-white mb-4 group-hover:text-indigo-300 transition-colors leading-tight">{item.title}</h2>
-              <p className="text-slate-400 text-sm leading-relaxed mb-6">
+              <p className="text-slate-400 text-sm leading-relaxed mb-6 whitespace-pre-wrap">
                 {item.content}
               </p>
-              <button className="flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group/btn">
-                Saiba Mais 
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover/btn:translate-x-2 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-              </button>
+              
+              {item.link_url ? (
+                <a 
+                  href={item.link_url} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-indigo-400 font-bold text-xs uppercase tracking-widest hover:text-white transition-colors group/btn"
+                >
+                  Saiba Mais 
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover/btn:translate-x-2 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </a>
+              ) : (
+                <div className="text-[10px] text-slate-600 font-bold uppercase tracking-widest italic">Informativo Interno</div>
+              )}
             </div>
           </article>
         ))}

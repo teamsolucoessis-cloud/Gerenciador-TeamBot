@@ -34,7 +34,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const [editingPostId, setEditingPostId] = useState<string | null>(null);
 
   const [newLink, setNewLink] = useState({ title: '', description: '', url: '', icon_url: '' });
-  const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '' });
+  const [newPost, setNewPost] = useState({ title: '', content: '', image_url: '', link_url: '' });
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -145,7 +145,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
         setNews([data[0], ...news]);
         addNotification('Notícia publicada!', 'success');
       }
-      setNewPost({ title: '', content: '', image_url: '' });
+      setNewPost({ title: '', content: '', image_url: '', link_url: '' });
       setEditingPostId(null);
       setShowAddNewsForm(false);
     } catch (err: any) { addNotification(err.message, 'error'); }
@@ -153,7 +153,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   };
 
   const startEditingNews = (n: News) => {
-    setNewPost({ title: n.title, content: n.content, image_url: n.image_url });
+    setNewPost({ title: n.title, content: n.content, image_url: n.image_url, link_url: n.link_url || '' });
     setEditingPostId(n.id);
     setShowAddNewsForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -240,7 +240,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
           <div className="space-y-10">
             {activeTab === 'PROFILE' && (
               <div className="space-y-8 animate-in slide-in-from-right-8 duration-600">
-                {/* PUBLIC LINK CARD - RE-FIXED FOR VISIBILITY */}
                 <div className="glass p-8 rounded-[2.5rem] border-indigo-500/20 space-y-4">
                   <div className="flex items-center gap-2 mb-2">
                     <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
@@ -389,7 +388,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             {activeTab === 'NEWS' && (
               <div className="space-y-6 animate-in slide-in-from-right-8 duration-600">
                 <button 
-                  onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); setNewPost({title:'', content:'', image_url:''}); }}
+                  onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); setNewPost({title:'', content:'', image_url:'', link_url: ''}); }}
                   className="w-full glass p-8 rounded-[2rem] flex flex-col items-center justify-center gap-3 text-indigo-400 hover:bg-indigo-600/10 transition-all border-dashed border-2 border-indigo-500/20"
                 >
                   <div className="w-12 h-12 rounded-full bg-indigo-600/10 flex items-center justify-center">
@@ -403,8 +402,14 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     <h3 className="text-white font-black text-sm uppercase tracking-[0.2em]">{editingPostId ? 'Sincronizar Edição' : 'Novo Update'}</h3>
                     <input placeholder="Título do Post" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm font-bold outline-none border border-white/5" required />
                     <textarea placeholder="Escreva o conteúdo estratégico aqui..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-6 rounded-2xl text-sm h-44 resize-none outline-none border border-white/5" required />
+                    
+                    <div className="space-y-4">
+                       <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Link de Destino (Saiba Mais)</label>
+                       <input placeholder="https://youtube.com/..." value={newPost.link_url} onChange={e => setNewPost({...newPost, link_url: e.target.value})} className="w-full bg-slate-950 p-5 rounded-2xl text-sm outline-none border border-white/5" />
+                    </div>
+
                     <div className="flex flex-col sm:flex-row items-center gap-5">
-                       <input placeholder="Link da Imagem" value={newPost.image_url} onChange={e => setNewPost({...newPost, image_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none w-full sm:w-auto" />
+                       <input placeholder="Link da Imagem Banner" value={newPost.image_url} onChange={e => setNewPost({...newPost, image_url: e.target.value})} className="flex-grow bg-slate-950 p-5 rounded-2xl text-sm outline-none w-full sm:w-auto" />
                        <label className="shrink-0 bg-indigo-600/10 text-indigo-400 px-6 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:text-white transition-all w-full sm:w-auto text-center">
                          Upload Banner
                          <input type="file" className="hidden" onChange={async (e) => {

@@ -106,11 +106,11 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                 className="w-full h-full object-contain" 
               />
             </div>
-            <div className="flex-grow min-w-0">
+            <div className="flex-grow min-w-0 py-1">
               <h3 className="text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors">{link.title}</h3>
-              <p className="text-slate-500 text-sm line-clamp-1 font-medium">{link.description}</p>
+              <p className="text-slate-500 text-sm font-medium leading-relaxed">{link.description}</p>
             </div>
-            <div className="pr-2 text-slate-700 group-hover:text-indigo-500/50 transition-colors">
+            <div className="pr-2 text-slate-700 group-hover:text-indigo-500/50 transition-colors shrink-0">
               <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
             </div>
           </a>
