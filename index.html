@@ -8,14 +8,15 @@
     
     <!-- PWA Setup & Brand Assets -->
     <link rel="manifest" href="/manifest.json">
-    <link rel="icon" type="image/png" href="https://i.ibb.co/v4pXp2F/teambot-mascot.png">
-    <link rel="apple-touch-icon" href="https://i.ibb.co/v4pXp2F/teambot-mascot.png">
+    <link rel="icon" type="image/png" href="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
+    <link rel="apple-touch-icon" href="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
     <meta name="theme-color" content="#020617">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="TeamBot">
 
     <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://i.ibb.co">
+    <link rel="preconnect" href="https://ywqjhjxiyvbimcbqjnnc.supabase.co">
     <link rel="preconnect" href="https://api.dicebear.com">
 
     <script src="https://cdn.tailwindcss.com"></script>
@@ -69,9 +70,12 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      if ('serviceWorker' in navigator && !window.location.host.includes('goog')) {
+      // Registro de Service Worker otimizado para produção
+      if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(() => {});
+          navigator.serviceWorker.register('/sw.js')
+            .then(reg => console.log('TeamBot PWA: Online'))
+            .catch(err => console.log('TeamBot PWA: Offline mode only', err));
         });
       }
     </script>

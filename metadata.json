@@ -1,9 +1,9 @@
 {
   "name": "Gerenciador TeamBot",
-  "description": "Central inteligente de links e novidades premium com upload de arquivos e design ultra-moderno.",
+  "description": "Central inteligente de links e novidades premium com design ultra-moderno.",
   "icons": [
     {
-      "src": "https://i.ibb.co/v4pXp2F/teambot-mascot.png",
+      "src": "https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"

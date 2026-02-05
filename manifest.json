@@ -4,21 +4,22 @@
   "name": "Gerenciador TeamBot Premium",
   "icons": [
     {
-      "src": "https://i.ibb.co/v4pXp2F/teambot-mascot.png",
+      "src": "https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png",
       "type": "image/png",
       "sizes": "192x192",
       "purpose": "any"
     },
     {
-      "src": "https://i.ibb.co/v4pXp2F/teambot-mascot.png",
+      "src": "https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png",
       "type": "image/png",
       "sizes": "512x512",
       "purpose": "maskable"
     }
   ],
-  "start_url": "/?utm_source=pwa",
+  "start_url": ".",
   "display": "standalone",
   "theme_color": "#020617",
   "background_color": "#020617",
-  "orientation": "portrait"
+  "orientation": "portrait",
+  "scope": "/"
 }
