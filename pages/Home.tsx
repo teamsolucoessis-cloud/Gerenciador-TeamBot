@@ -62,14 +62,14 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         </div>
       </section>
 
-      {/* Latest News Card - Layout Vertical Premium */}
+      {/* Latest News Card - Layout Vertical Premium com Resumo de 1 Linha */}
       {latestNews && (
         <section className="w-full mb-12 px-2">
           <div className="flex items-center gap-3 mb-6 px-4">
             <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
             </div>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Última Novidade</h2>
+            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Destaque</h2>
           </div>
 
           <button 
@@ -87,19 +87,20 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
               <div className="absolute bottom-4 left-6 flex items-center gap-2">
                 <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></span>
-                <span className="text-[10px] font-black text-white uppercase tracking-widest">Postado agora</span>
+                <span className="text-[10px] font-black text-white uppercase tracking-widest">Novo Update</span>
               </div>
             </div>
 
             <div className="p-8 relative z-10">
-              <h3 className="text-white font-black text-2xl leading-tight group-hover:text-indigo-300 transition-colors mb-3 tracking-tight">
+              <h3 className="text-white font-black text-2xl leading-tight group-hover:text-indigo-300 transition-colors mb-2 tracking-tight">
                 {latestNews.title}
               </h3>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                {latestNews.content} {/* Notícias sem limite de caracteres */}
+              {/* Ajuste Sênior: Limitado a 1 linha para otimização de espaço */}
+              <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-1">
+                {latestNews.content}
               </p>
               <div className="mt-6 flex items-center gap-2 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
-                 Ver detalhes do update
+                 Ler atualização completa
                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </div>
             </div>
@@ -144,7 +145,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                   {link.title}
                 </h3>
                 <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                  {truncateText(link.description, 120)} {/* Limite de caracteres para links */}
+                  {truncateText(link.description, 120)}
                 </p>
                 <div className="mt-8 flex items-center justify-between">
                    <div className="px-5 py-2.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_5px_15px_rgba(79,70,229,0.4)] group-hover:bg-indigo-500 transition-all">
