@@ -38,9 +38,16 @@
         }
         .glass {
             background: rgba(255, 255, 255, 0.03);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
             border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-premium {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid rgba(255, 255, 255, 0.15);
         }
         .gradient-bg {
             background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, rgba(2, 6, 23, 0) 70%);
@@ -51,7 +58,24 @@
             50% { transform: translateY(-15px) rotate(5deg); }
         }
         .animate-mascot { animation: mascot-float 5s ease-in-out infinite; }
-        .icon-glow { filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.5)); }
+        
+        @keyframes shine {
+          0% { left: -100%; }
+          20% { left: 100%; }
+          100% { left: 100%; }
+        }
+        .shimmer-effect::after {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 50%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
+          animation: shine 8s infinite;
+        }
+
+        .icon-glow { filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.4)); }
         
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
@@ -75,22 +99,10 @@
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
     <script>
-      // Registro de Service Worker com limpeza de cache agressiva para versão nova
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker.register('/sw.js')
-            .then(reg => {
-              console.log('TeamBot PWA: Online');
-              // Força atualização se houver novo SW
-              reg.onupdatefound = () => {
-                const installingWorker = reg.installing;
-                installingWorker.onstatechange = () => {
-                  if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    window.location.reload();
-                  }
-                };
-              };
-            })
+            .then(reg => console.log('TeamBot PWA: Online'))
             .catch(err => console.log('TeamBot PWA Error', err));
         });
       }

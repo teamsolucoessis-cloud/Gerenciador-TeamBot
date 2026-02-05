@@ -50,45 +50,49 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
             />
           </div>
         </div>
-        <h1 className="text-3xl font-black mt-8 text-white tracking-tight drop-shadow-sm uppercase">{profile.name}</h1>
+        <h1 className="text-3xl font-black mt-8 text-white tracking-tighter drop-shadow-md uppercase">{profile.name}</h1>
         <div className="max-w-md mx-auto">
           <p className="text-slate-400 text-sm mt-3 px-8 leading-relaxed font-medium">{profile.bio}</p>
         </div>
       </section>
 
-      {/* Latest News Card */}
+      {/* Latest News Card - Estilo Newsfeed Premium */}
       {latestNews && (
-        <section className="w-full mb-10 px-2">
+        <section className="w-full mb-12 px-2">
           <button 
             onClick={() => onNavigate('NEWS_LIST')}
-            className="w-full glass rounded-[2rem] p-5 flex items-center gap-5 hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative"
+            className="w-full glass-premium rounded-[2.5rem] p-6 flex items-center gap-6 hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shimmer-effect"
           >
-            <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-600/5 blur-3xl -z-10 rounded-full group-hover:bg-indigo-600/10 transition-colors"></div>
+            <div className="absolute top-0 right-0 w-48 h-48 bg-indigo-600/10 blur-[80px] -z-10 rounded-full group-hover:bg-indigo-600/20 transition-colors duration-700"></div>
             <div className="relative shrink-0">
-               <img 
-                 src={latestNews.image_url || GET_FALLBACK("news")} 
-                 onError={(e) => handleImageError(e, "news")}
-                 className="w-20 h-20 rounded-2xl object-cover border border-white/10" 
-                 alt="" 
-               />
-               <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-indigo-600 rounded-lg flex items-center justify-center border-2 border-slate-950">
+               <div className="p-1 bg-gradient-to-tr from-white/10 to-transparent rounded-2xl">
+                 <img 
+                   src={latestNews.image_url || GET_FALLBACK("news")} 
+                   onError={(e) => handleImageError(e, "news")}
+                   className="w-20 h-20 rounded-xl object-cover border border-white/5" 
+                   alt="" 
+                 />
+               </div>
+               <div className="absolute -bottom-2 -right-2 w-7 h-7 bg-indigo-600 rounded-xl flex items-center justify-center border-2 border-slate-950 shadow-lg">
                   <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
                </div>
             </div>
-            <div className="flex-grow min-w-0 pr-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.2em]">Última Novidade</span>
-              </div>
-              <h3 className="text-white font-bold text-lg leading-tight group-hover:text-indigo-300 transition-colors line-clamp-1">{latestNews.title}</h3>
-              <p className="text-slate-500 text-xs mt-1 line-clamp-1">{latestNews.content}</p>
+            <div className="flex-grow min-w-0 pr-2">
+              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-[0.3em] mb-2 block">Novidade em Destaque</span>
+              <h3 className="text-white font-black text-xl leading-tight group-hover:text-indigo-300 transition-colors line-clamp-1">{latestNews.title}</h3>
+              <p className="text-slate-500 text-xs mt-1.5 font-medium line-clamp-1">{latestNews.content}</p>
             </div>
           </button>
         </section>
       )}
 
-      {/* Links List */}
-      <section className="w-full space-y-5 px-2">
-        <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 ml-4">Conexões Estratégicas</h2>
+      {/* Links List - REDESIGN PREMIUM */}
+      <section className="w-full space-y-6 px-2 pb-12">
+        <div className="flex items-center justify-between px-4 mb-6">
+          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Conexões Estratégicas</h2>
+          <div className="h-[1px] flex-grow ml-6 bg-gradient-to-r from-white/10 to-transparent"></div>
+        </div>
+
         {links.map((link) => (
           <a 
             key={link.id}
@@ -96,30 +100,42 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => handleLinkClick(link.id)}
-            className="glass rounded-[1.5rem] p-5 flex items-center gap-5 link-card group active:scale-[0.97]"
+            className="glass-premium rounded-[2rem] p-5 flex items-center gap-6 group active:scale-[0.96] transition-all duration-300 hover:bg-white/[0.04] relative overflow-hidden shimmer-effect"
           >
-            <div className="w-16 h-16 rounded-2xl bg-slate-900 border border-white/5 overflow-hidden shrink-0 flex items-center justify-center p-2 group-hover:bg-slate-800 transition-colors">
+            {/* Efeito visual de hover */}
+            <div className="absolute inset-0 bg-gradient-to-r from-indigo-500/0 via-indigo-500/0 to-indigo-500/0 group-hover:from-indigo-500/[0.03] transition-all duration-500"></div>
+            
+            <div className="w-16 h-16 rounded-3xl bg-slate-900 border border-white/10 overflow-hidden shrink-0 flex items-center justify-center p-2.5 group-hover:border-indigo-500/40 group-hover:scale-110 transition-all duration-500 icon-glow relative">
               <img 
                 src={link.icon_url || GET_FALLBACK(link.title)} 
                 onError={(e) => handleImageError(e, link.title)}
                 alt="" 
-                className="w-full h-full object-contain" 
+                className="w-full h-full object-contain relative z-10" 
               />
+              <div className="absolute inset-0 bg-indigo-500/5 group-hover:bg-indigo-500/10 transition-colors"></div>
             </div>
-            <div className="flex-grow min-w-0 py-1">
-              <h3 className="text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors">{link.title}</h3>
-              <p className="text-slate-500 text-sm font-medium leading-relaxed">{link.description}</p>
+
+            <div className="flex-grow min-w-0 py-1 relative z-10">
+              <h3 className="text-white font-black text-lg mb-1 group-hover:text-indigo-300 transition-colors tracking-tight">{link.title}</h3>
+              <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-2 group-hover:text-slate-300 transition-colors">{link.description}</p>
             </div>
-            <div className="pr-2 text-slate-700 group-hover:text-indigo-500/50 transition-colors shrink-0">
-              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h6v6"></path><path d="M10 14 21 3"></path><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path></svg>
+
+            <div className="pr-2 text-slate-600 group-hover:text-indigo-400 group-hover:translate-x-1 transition-all shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" className="opacity-40 group-hover:opacity-100">
+                <path d="M5 12h14"></path>
+                <path d="m12 5 7 7-7 7"></path>
+              </svg>
             </div>
           </a>
         ))}
       </section>
 
       {links.length === 0 && (
-        <div className="mt-12 glass p-10 rounded-[2rem] text-center w-full border border-white/5">
-          <p className="text-slate-500 italic text-sm font-medium tracking-wide">Nenhuma conexão ativa no momento.</p>
+        <div className="mt-12 glass p-12 rounded-[2.5rem] text-center w-full border border-white/5">
+          <div className="w-16 h-16 bg-white/5 rounded-full flex items-center justify-center mx-auto mb-6">
+             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-600"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+          </div>
+          <p className="text-slate-500 italic text-sm font-bold tracking-widest uppercase">Nenhuma conexão ativa</p>
         </div>
       )}
     </div>
