@@ -100,7 +100,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         ) : null}
       </section>
 
-      {/* Links Section - COMPACT & CLEAN */}
+      {/* Links Section - COMPACT & CLEAN (ULTRA MINIMAL) */}
       <section className="w-full space-y-3 px-2 pb-20">
         <div className="flex items-center gap-3 mb-4 px-4">
           <div className="w-6 h-6 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
@@ -110,7 +110,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         </div>
 
         {links.length > 0 ? (
-          <div className="grid grid-cols-1 gap-3">
+          <div className="grid grid-cols-1 gap-2.5">
             {links.map((link) => (
               <a 
                 key={link.id}
@@ -118,9 +118,10 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => handleLinkClick(link.id)}
-                className="glass-premium rounded-2xl p-3 flex items-center gap-4 group active:scale-[0.98] transition-all duration-300 shadow-lg border border-white/5 hover:border-indigo-500/30 overflow-hidden"
+                className="glass-premium rounded-2xl p-2.5 flex items-center gap-4 group active:scale-[0.98] transition-all duration-300 shadow-md border border-white/5 hover:border-indigo-500/30 overflow-hidden"
               >
-                <div className="w-12 h-12 shrink-0 bg-slate-900/80 rounded-xl flex items-center justify-center border border-white/5 overflow-hidden group-hover:border-indigo-500/40 transition-colors">
+                {/* Imagem Arredondada e Reduzida */}
+                <div className="w-11 h-11 shrink-0 bg-slate-900/80 rounded-xl flex items-center justify-center border border-white/5 overflow-hidden group-hover:border-indigo-500/40 transition-colors">
                   <img 
                     src={link.icon_url || GET_FALLBACK(link.title)} 
                     onError={(e) => handleImageError(e, link.title)}
@@ -129,14 +130,16 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                   />
                 </div>
 
+                {/* Título Pequeno e Limpo ao lado da imagem */}
                 <div className="flex-grow min-w-0">
-                  <h3 className="text-white font-black text-[12px] tracking-wide uppercase truncate group-hover:text-indigo-300 transition-colors">
+                  <h3 className="text-white font-black text-[11px] tracking-wide uppercase truncate group-hover:text-indigo-300 transition-colors">
                     {link.title}
                   </h3>
                 </div>
 
-                <div className="shrink-0 opacity-10 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-2">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-400"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                {/* Seta discreta */}
+                <div className="shrink-0 opacity-10 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-1">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-400"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
               </a>
             ))}
