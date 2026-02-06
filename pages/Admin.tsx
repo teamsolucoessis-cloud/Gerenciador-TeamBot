@@ -109,7 +109,12 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const fetchUserData = async (userId: string) => {
     try {
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
-      if (prof) setProfile(prof);
+      if (prof) {
+        setProfile(prof);
+      } else {
+        // Garante que o ID no estado local seja o UUID correto mesmo sem registro no DB
+        setProfile(prev => ({ ...prev, id: userId }));
+      }
       
       const { data: lks } = await supabase.from('tools').select('*').eq('user_id', userId).order('created_at', { ascending: false });
       if (lks) setLinks(lks || []);
@@ -174,7 +179,12 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const saveProfile = async () => {
     setLoading(true);
     try {
-      const { error } = await supabase.from('profiles').upsert({ id: session.user.id, ...profile, updated_at: new Date() });
+      // FIX: Spread do profile primeiro e id da sessão depois para garantir o UUID correto
+      const { error } = await supabase.from('profiles').upsert({ 
+        ...profile, 
+        id: session.user.id, 
+        updated_at: new Date() 
+      });
       if (error) throw error;
       addNotification('Perfil atualizado!', 'success');
       generateAssistantInsight();

@@ -12,7 +12,7 @@ import { supabase } from './supabaseClient';
 import { BRAND_CONFIG } from './brand';
 
 const INITIAL_PROFILE: Profile = {
-  id: 'default',
+  id: '', // Deixando vazio para não disparar erro de UUID antes da sessão carregar
   name: 'Usuário TeamBot',
   bio: 'Personalize sua bio no painel para descrever sua autoridade e como você ajuda seus clientes.',
   avatar_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
@@ -21,7 +21,6 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  // Inicialização de rota mais robusta
   const getInitialView = (): ViewType => {
     const path = window.location.pathname;
     if (path.includes('/admin')) return 'ADMIN';
@@ -62,6 +61,9 @@ const App: React.FC = () => {
           if (data) {
             setProfile(data);
             targetUserId = data.id;
+          } else {
+            setProfile(prev => ({ ...prev, id: session.user.id }));
+            targetUserId = session.user.id;
           }
         }
       }
@@ -102,7 +104,6 @@ const App: React.FC = () => {
       'NEWS_LIST': '/novidades'
     };
     
-    // Mantém o parâmetro 'u' na URL se ele existir para não quebrar a visualização de perfil
     const params = new URLSearchParams(window.location.search);
     const u = params.get('u');
     const finalPath = u ? `${paths[view]}?u=${u}` : paths[view];
