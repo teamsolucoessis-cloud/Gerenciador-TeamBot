@@ -26,11 +26,6 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
     e.currentTarget.src = GET_FALLBACK(seed);
   };
 
-  const truncateText = (text: string, limit: number) => {
-    if (text.length <= limit) return text;
-    return text.slice(0, limit) + "...";
-  };
-
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in slide-in-from-bottom-6 duration-1000">
       
@@ -43,10 +38,10 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
               src={profile.avatar_url || GET_FALLBACK(profile.name)} 
               alt={profile.name} 
               onError={(e) => handleImageError(e, profile.name)}
-              className="w-32 h-32 rounded-full object-cover border-4 border-slate-950"
+              className="w-28 h-28 rounded-full object-cover border-4 border-slate-950"
             />
           </div>
-          <div className="absolute -top-4 -right-10 w-24 h-24 z-20 animate-mascot drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)]">
+          <div className="absolute -top-4 -right-8 w-20 h-20 z-20 animate-mascot drop-shadow-[0_15px_25px_rgba(0,0,0,0.6)]">
             <img 
               src={profile.mascot_url || GET_FALLBACK("mascot")} 
               alt="Mascot" 
@@ -55,33 +50,31 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
             />
           </div>
         </div>
-        <h1 className="text-3xl font-black mt-8 text-white tracking-tighter drop-shadow-md uppercase bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
+        <h1 className="text-2xl font-black mt-6 text-white tracking-tighter uppercase bg-clip-text text-transparent bg-gradient-to-b from-white to-slate-400">
           {profile.name}
         </h1>
-        <div className="max-w-md mx-auto">
-          <p className="text-slate-400 text-sm mt-3 px-8 leading-relaxed font-medium italic opacity-80">
+        <div className="max-w-xs mx-auto">
+          <p className="text-slate-400 text-[11px] mt-2 px-4 leading-relaxed font-medium italic opacity-70">
             {profile.bio}
           </p>
         </div>
       </section>
 
       {/* Latest News Section */}
-      <section className="w-full mb-12 px-2">
-        <div className="flex items-center justify-between mb-6 px-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
-            </div>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Updates</h2>
+      <section className="w-full mb-10 px-2">
+        <div className="flex items-center gap-3 mb-4 px-4">
+          <div className="w-6 h-6 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
           </div>
+          <h2 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Novidades</h2>
         </div>
 
         {latestNews ? (
           <button 
             onClick={() => onNavigate('NEWS_LIST')}
-            className="w-full glass-premium rounded-[2.5rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shimmer-effect shadow-2xl"
+            className="w-full glass-premium rounded-[2rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shadow-2xl"
           >
-            <div className="h-48 w-full overflow-hidden relative border-b border-white/5">
+            <div className="h-40 w-full overflow-hidden relative border-b border-white/5">
               <img 
                 src={latestNews.image_url || GET_FALLBACK("news")} 
                 onError={(e) => handleImageError(e, "news")}
@@ -89,49 +82,35 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                 alt="" 
               />
               <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80"></div>
-              <div className="absolute bottom-4 left-6 flex items-center gap-2">
-                <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
-                <span className="text-[10px] font-black text-white uppercase tracking-widest">Destaque Atual</span>
+              <div className="absolute bottom-3 left-6 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse"></span>
+                <span className="text-[8px] font-black text-white uppercase tracking-widest">Destaque</span>
               </div>
             </div>
-
-            <div className="p-8 relative z-10">
-              <h3 className="text-white font-black text-2xl mb-2 tracking-tight group-hover:text-indigo-300 transition-colors">
+            <div className="p-6">
+              <h3 className="text-white font-black text-lg mb-1 tracking-tight group-hover:text-indigo-300 transition-colors uppercase">
                 {latestNews.title}
               </h3>
-              <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-1">
-                {latestNews.content}
-              </p>
-              <div className="mt-6 flex items-center gap-2 text-indigo-400 text-[10px] font-black uppercase tracking-widest">
-                 Ver todas as novidades
-                 <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              <div className="flex items-center gap-2 text-indigo-400 text-[9px] font-black uppercase tracking-widest">
+                 Ler atualização completa
+                 <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="group-hover:translate-x-1 transition-transform"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </div>
             </div>
           </button>
-        ) : (
-          <div className="w-full glass rounded-[2.5rem] p-12 border-dashed border-2 border-white/5 flex flex-col items-center text-center group hover:border-indigo-500/20 transition-all">
-            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 opacity-30 group-hover:opacity-60 transition-opacity">
-               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path></svg>
-            </div>
-            <h3 className="text-white font-black text-[11px] uppercase tracking-[0.3em] mb-3">Feed de Atualizações</h3>
-            <p className="text-slate-500 text-[11px] leading-relaxed max-w-[300px] font-medium opacity-60">
-              Mantenha sua audiência por dentro. Publique lançamentos e comunicados importantes no seu painel Admin.
-            </p>
-          </div>
-        )}
+        ) : null}
       </section>
 
-      {/* Links Section */}
-      <section className="w-full space-y-8 px-2 pb-12">
+      {/* Links Section - COMPACT LIST MODE */}
+      <section className="w-full space-y-3 px-2 pb-20">
         <div className="flex items-center gap-3 mb-6 px-4">
-          <div className="w-8 h-8 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
-             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+          <div className="w-6 h-6 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
+             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-indigo-400"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path></svg>
           </div>
-          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Conexões Estratégicas</h2>
+          <h2 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Ferramentas & Aplicativos</h2>
         </div>
 
         {links.length > 0 ? (
-          <div className="grid grid-cols-1 gap-8">
+          <div className="grid grid-cols-1 gap-4">
             {links.map((link) => (
               <a 
                 key={link.id}
@@ -139,50 +118,38 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => handleLinkClick(link.id)}
-                className="glass-premium rounded-[2.5rem] flex flex-col group active:scale-[0.98] transition-all duration-300 relative overflow-hidden shimmer-effect shadow-xl"
+                className="glass-premium rounded-3xl p-4 flex items-center gap-5 group active:scale-[0.97] transition-all duration-300 shadow-lg border border-white/5 hover:border-indigo-500/30 relative overflow-hidden"
               >
-                <div className="w-full h-40 bg-slate-900/50 flex items-center justify-center relative border-b border-white/5">
-                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-purple-600/10 opacity-50"></div>
+                {/* Ícone Compacto */}
+                <div className="w-14 h-14 shrink-0 bg-slate-900/80 rounded-2xl flex items-center justify-center border border-white/5 overflow-hidden group-hover:border-indigo-500/40 transition-colors">
                   <img 
                     src={link.icon_url || GET_FALLBACK(link.title)} 
                     onError={(e) => handleImageError(e, link.title)}
                     alt="" 
-                    className="relative w-20 h-20 object-contain icon-glow transform group-hover:scale-110 transition-transform duration-500" 
+                    className="w-8 h-8 object-contain icon-glow group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
-                <div className="p-8">
-                  <h3 className="text-white font-black text-2xl mb-2 tracking-tight group-hover:text-indigo-300 transition-colors">
-                    {link.title}
+
+                {/* Info Compacta */}
+                <div className="flex-grow min-w-0">
+                  <h3 className="text-white font-black text-[13px] tracking-wide uppercase truncate group-hover:text-indigo-300 transition-colors">
+                    "{link.title}"
                   </h3>
-                  <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                    {truncateText(link.description, 100)}
+                  <p className="text-slate-500 text-[9px] font-bold uppercase tracking-tight mt-0.5">
+                    Acessar agora
                   </p>
-                  <div className="mt-8 flex items-center justify-between">
-                     <span className="px-6 py-3 rounded-2xl bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-xl group-hover:bg-indigo-500 transition-all">
-                        Acessar Canal
-                     </span>
-                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-slate-600 group-hover:text-indigo-400 transition-colors"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                  </div>
+                </div>
+
+                {/* Indicador de Clique */}
+                <div className="shrink-0 opacity-20 group-hover:opacity-100 group-hover:translate-x-1 transition-all">
+                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-400"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
               </a>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6">
-            <div className="glass rounded-[2.5rem] p-12 border-dashed border-2 border-white/5 flex flex-col items-center text-center group hover:border-indigo-500/20 transition-all">
-              <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center mb-6 opacity-30">
-                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-500"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              </div>
-              <h3 className="text-white font-black text-[11px] uppercase tracking-[0.2em] mb-4">Sua Vitrine de Links</h3>
-              <p className="text-slate-500 text-[11px] leading-relaxed max-w-sm font-medium opacity-60">
-                Centralize seu WhatsApp, redes sociais, portfólio ou ferramentas exclusivas aqui. Configure seus botões premium através do painel.
-              </p>
-              <div className="mt-10 flex gap-3">
-                {[1,2,3].map(i => (
-                  <div key={i} className="w-2 h-2 rounded-full bg-white/5 group-hover:bg-indigo-500/20 transition-colors"></div>
-                ))}
-              </div>
-            </div>
+          <div className="glass rounded-[2rem] p-10 border-dashed border-2 border-white/5 flex flex-col items-center text-center opacity-40">
+            <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest">Nenhuma ferramenta conectada</p>
           </div>
         )}
       </section>
