@@ -283,7 +283,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
           {/* Assistente IA - Mascote & Balão */}
           <div className="relative mb-12 flex justify-center items-start pt-12">
             <div className="relative z-10 p-1 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full shadow-[0_0_20px_rgba(79,70,229,0.3)] shrink-0 group">
-               <img src={profile.avatar_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-20 h-20 rounded-full object-cover border-2 border-slate-950" alt="" />
+               <img src={profile.mascot_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-20 h-20 rounded-full object-cover border-2 border-slate-950" alt="" />
                <button onClick={generateAssistantInsight} className="absolute -bottom-1 -right-1 w-8 h-8 bg-indigo-600 rounded-full flex items-center justify-center border-2 border-slate-950 text-white shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"></path><polyline points="21 3 21 8 16 8"></polyline></svg>
                </button>
@@ -347,13 +347,14 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                 </div>
                 <div className="glass p-10 rounded-[3rem] space-y-8 border-white/5">
                     <div className="grid grid-cols-1 gap-8">
-                      <div className="flex flex-col sm:flex-row gap-8">
-                        <div className="flex-1 space-y-4">
+                      {/* Uploads de Imagem: Avatar e Mascote */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="space-y-4">
                           <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Avatar do Perfil</label>
-                          <div className="flex items-center gap-5">
-                            <img src={profile.avatar_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-20 h-20 rounded-full object-cover border-2 border-indigo-500/30 shadow-lg" alt="" />
-                            <label className="bg-indigo-600/10 text-indigo-400 px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:text-white transition-all">
-                               Upload Foto
+                          <div className="flex items-center gap-5 p-4 bg-slate-900/40 rounded-3xl border border-white/5">
+                            <img src={profile.avatar_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-16 h-16 rounded-full object-cover border-2 border-indigo-500/30 shadow-lg" alt="" />
+                            <label className="bg-indigo-600/10 text-indigo-400 px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-indigo-600 hover:text-white transition-all">
+                               Mudar Foto
                                <input type="file" className="hidden" onChange={async (e) => {
                                  const file = e.target.files?.[0];
                                  if (file) {
@@ -364,7 +365,25 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                             </label>
                           </div>
                         </div>
+
+                        <div className="space-y-4">
+                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Mascote da Marca</label>
+                          <div className="flex items-center gap-5 p-4 bg-slate-900/40 rounded-3xl border border-white/5">
+                            <img src={profile.mascot_url || 'https://i.ibb.co/v4pXp2F/teambot-mascot.png'} className="w-16 h-16 rounded-2xl object-contain border-2 border-purple-500/30 shadow-lg p-1 bg-slate-900" alt="" />
+                            <label className="bg-purple-600/10 text-purple-400 px-5 py-2.5 rounded-2xl text-[9px] font-black uppercase tracking-widest cursor-pointer hover:bg-purple-600 hover:text-white transition-all">
+                               Mudar Mascote
+                               <input type="file" className="hidden" onChange={async (e) => {
+                                 const file = e.target.files?.[0];
+                                 if (file) {
+                                   const url = await handleFileUpload(file, 'mascots');
+                                   if (url) setProfile({...profile, mascot_url: url});
+                                 }
+                               }} />
+                            </label>
+                          </div>
+                        </div>
                       </div>
+
                       <div className="space-y-4">
                          <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest">Slug (@identificador)</label>
                          <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="ex: meunome" className="w-full bg-slate-950 border border-white/5 p-6 rounded-3xl text-sm font-bold text-white outline-none focus:ring-2 focus:ring-indigo-500" />

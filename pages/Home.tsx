@@ -62,21 +62,20 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         </div>
       </section>
 
-      {/* Latest News Card - Layout Vertical Premium com Resumo de 1 Linha */}
-      {latestNews && (
-        <section className="w-full mb-12 px-2">
-          <div className="flex items-center gap-3 mb-6 px-4">
-            <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
-               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
-            </div>
-            <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Destaque</h2>
+      {/* Latest News Card */}
+      <section className="w-full mb-12 px-2">
+        <div className="flex items-center gap-3 mb-6 px-4">
+          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-indigo-400"><path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"></path></svg>
           </div>
+          <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Destaque</h2>
+        </div>
 
+        {latestNews ? (
           <button 
             onClick={() => onNavigate('NEWS_LIST')}
             className="w-full glass-premium rounded-[2.5rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shimmer-effect shadow-2xl"
           >
-            {/* Imagem de Topo da Notícia */}
             <div className="h-48 w-full overflow-hidden relative border-b border-white/5">
               <img 
                 src={latestNews.image_url || GET_FALLBACK("news")} 
@@ -95,7 +94,6 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
               <h3 className="text-white font-black text-2xl leading-tight group-hover:text-indigo-300 transition-colors mb-2 tracking-tight">
                 {latestNews.title}
               </h3>
-              {/* Ajuste Sênior: Limitado a 1 linha para otimização de espaço */}
               <p className="text-slate-400 text-sm font-medium leading-relaxed line-clamp-1">
                 {latestNews.content}
               </p>
@@ -105,10 +103,20 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
               </div>
             </div>
           </button>
-        </section>
-      )}
+        ) : (
+          <div className="w-full glass rounded-[2.5rem] p-10 border-dashed border-2 border-white/10 flex flex-col items-center text-center group">
+            <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 opacity-40 group-hover:opacity-100 transition-opacity">
+               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-slate-500"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"></path></svg>
+            </div>
+            <h3 className="text-white font-black text-sm uppercase tracking-widest mb-3">Feed de Novidades</h3>
+            <p className="text-slate-500 text-[11px] leading-relaxed max-w-[280px] font-medium">
+              Mantenha sua audiência engajada. Publique updates, lançamentos ou comunicados importantes que aparecerão aqui com destaque.
+            </p>
+          </div>
+        )}
+      </section>
 
-      {/* Links List - Layout Vertical Premium */}
+      {/* Links List */}
       <section className="w-full space-y-8 px-2 pb-12">
         <div className="flex items-center gap-3 mb-6 px-4">
           <div className="w-8 h-8 rounded-lg bg-indigo-600/20 flex items-center justify-center border border-indigo-500/30">
@@ -117,55 +125,68 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
           <h2 className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Ferramentas & Aplicativos</h2>
         </div>
 
-        <div className="grid grid-cols-1 gap-8">
-          {links.map((link) => (
-            <a 
-              key={link.id}
-              href={link.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              onClick={() => handleLinkClick(link.id)}
-              className="glass-premium rounded-[2.5rem] flex flex-col group active:scale-[0.98] transition-all duration-300 hover:bg-white/[0.04] relative overflow-hidden shimmer-effect shadow-xl"
-            >
-              {/* Área de Ícone / Topo do Link */}
-              <div className="w-full h-40 bg-slate-900/50 flex items-center justify-center relative border-b border-white/5 overflow-hidden">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-purple-600/10 group-hover:opacity-100 opacity-50 transition-opacity"></div>
-                <div className="relative w-20 h-20 icon-glow transform group-hover:scale-110 transition-transform duration-500">
-                  <img 
-                    src={link.icon_url || GET_FALLBACK(link.title)} 
-                    onError={(e) => handleImageError(e, link.title)}
-                    alt="" 
-                    className="w-full h-full object-contain" 
-                  />
+        {links.length > 0 ? (
+          <div className="grid grid-cols-1 gap-8">
+            {links.map((link) => (
+              <a 
+                key={link.id}
+                href={link.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => handleLinkClick(link.id)}
+                className="glass-premium rounded-[2.5rem] flex flex-col group active:scale-[0.98] transition-all duration-300 hover:bg-white/[0.04] relative overflow-hidden shimmer-effect shadow-xl"
+              >
+                <div className="w-full h-40 bg-slate-900/50 flex items-center justify-center relative border-b border-white/5 overflow-hidden">
+                  <div className="absolute inset-0 bg-gradient-to-br from-indigo-600/10 via-transparent to-purple-600/10 group-hover:opacity-100 opacity-50 transition-opacity"></div>
+                  <div className="relative w-20 h-20 icon-glow transform group-hover:scale-110 transition-transform duration-500">
+                    <img 
+                      src={link.icon_url || GET_FALLBACK(link.title)} 
+                      onError={(e) => handleImageError(e, link.title)}
+                      alt="" 
+                      className="w-full h-full object-contain" 
+                    />
+                  </div>
                 </div>
-              </div>
 
-              <div className="p-8 relative z-10">
-                <h3 className="text-white font-black text-2xl mb-3 group-hover:text-indigo-300 transition-colors tracking-tight">
-                  {link.title}
-                </h3>
-                <p className="text-slate-400 text-sm font-medium leading-relaxed">
-                  {truncateText(link.description, 120)}
-                </p>
-                <div className="mt-8 flex items-center justify-between">
-                   <div className="px-5 py-2.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_5px_15px_rgba(79,70,229,0.4)] group-hover:bg-indigo-500 transition-all">
-                      Acessar Agora
-                   </div>
-                   <div className="text-slate-600 group-hover:text-indigo-400 transition-colors">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                   </div>
+                <div className="p-8 relative z-10">
+                  <h3 className="text-white font-black text-2xl mb-3 group-hover:text-indigo-300 transition-colors tracking-tight">
+                    {link.title}
+                  </h3>
+                  <p className="text-slate-400 text-sm font-medium leading-relaxed">
+                    {truncateText(link.description, 120)}
+                  </p>
+                  <div className="mt-8 flex items-center justify-between">
+                     <div className="px-5 py-2.5 rounded-full bg-indigo-600 text-white text-[10px] font-black uppercase tracking-widest shadow-[0_5px_15px_rgba(79,70,229,0.4)] group-hover:bg-indigo-500 transition-all">
+                        Acessar Agora
+                     </div>
+                     <div className="text-slate-600 group-hover:text-indigo-400 transition-colors">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                     </div>
+                  </div>
                 </div>
+              </a>
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-6">
+            {/* Ghost Card para explicar a função */}
+            <div className="glass rounded-[2.5rem] p-12 border-dashed border-2 border-white/10 flex flex-col items-center text-center">
+              <div className="w-12 h-12 rounded-full bg-indigo-600/5 flex items-center justify-center mb-6">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" className="text-slate-600"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               </div>
-            </a>
-          ))}
-        </div>
+              <h3 className="text-white font-black text-sm uppercase tracking-[0.2em] mb-4">Sua Central de Conexões</h3>
+              <p className="text-slate-500 text-[11px] leading-relaxed max-w-sm font-medium">
+                Este é o seu hub estratégico. Adicione links para seus serviços, redes sociais, WhatsApp ou ferramentas exclusivas através do seu painel administrativo para começar a converter sua audiência.
+              </p>
+              <div className="mt-8 flex gap-2">
+                <div className="w-2 h-2 rounded-full bg-white/5"></div>
+                <div className="w-2 h-2 rounded-full bg-white/5"></div>
+                <div className="w-2 h-2 rounded-full bg-white/5"></div>
+              </div>
+            </div>
+          </div>
+        )}
       </section>
-
-      {links.length === 0 && (
-        <div className="mt-12 glass p-12 rounded-[2.5rem] text-center w-full border border-white/5">
-          <p className="text-slate-500 italic text-sm font-bold tracking-widest uppercase">Nenhuma conexão ativa</p>
-        </div>
-      )}
     </div>
   );
 };

@@ -13,8 +13,8 @@ import { BRAND_CONFIG } from './brand';
 
 const INITIAL_PROFILE: Profile = {
   id: 'default',
-  name: 'TeamBot Master',
-  bio: 'Seu assistente inteligente para centralizar conexões premium e ferramentas de alta tecnologia.',
+  name: 'Usuário TeamBot',
+  bio: 'Personalize sua bio no painel para descrever sua autoridade e como você ajuda seus clientes.',
   avatar_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   mascot_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   slug: 'teambot'
