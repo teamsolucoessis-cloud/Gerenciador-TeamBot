@@ -13,11 +13,11 @@ import { BRAND_CONFIG } from './brand';
 
 const INITIAL_PROFILE: Profile = {
   id: '', 
-  name: 'Usuário TeamBot',
-  bio: 'Personalize sua bio no painel para descrever sua autoridade.',
+  name: 'TeamBot Official',
+  bio: 'Carregando ecossistema digital...',
   avatar_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   mascot_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
-  slug: 'teambot'
+  slug: BRAND_CONFIG.SHOWCASE_SLUG
 };
 
 const App: React.FC = () => {
@@ -35,36 +35,33 @@ const App: React.FC = () => {
   const [links, setLinks] = useState<LinkItem[]>([]);
   const [news, setNews] = useState<News[]>([]);
   const [loading, setLoading] = useState(true);
-  const [userNotFound, setUserNotFound] = useState(false);
+  const [isGuest, setIsGuest] = useState(true);
 
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams(window.location.search);
-      const slug = params.get('u');
+      // Se não houver ?u=, usamos o slug da vitrine definido no brand.ts
+      const slug = params.get('u') || BRAND_CONFIG.SHOWCASE_SLUG;
+      
       let targetUserId = null;
 
-      if (slug) {
-        const { data, error } = await supabase.from('profiles').select('*').eq('slug', slug.toLowerCase()).single();
-        if (data) {
-          setProfile(data);
-          targetUserId = data.id;
-        } else if (error && error.code !== 'PGRST116') {
-          console.warn("User fetch error:", error);
-        }
-      } else {
-        const sessionRes = await supabase.auth.getSession();
-        const session = sessionRes?.data?.session;
-        
-        if (session) {
-          const { data } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-          if (data) {
-            setProfile(data);
-            targetUserId = data.id;
-          } else {
-            setProfile(prev => ({ ...prev, id: session.user.id }));
-            targetUserId = session.user.id;
-          }
+      // 1. Verificar se o usuário está logado para decidir se mostra o CTA
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsGuest(!session);
+
+      // 2. Buscar perfil pelo Slug (Vitrine ou Usuário específico)
+      const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slug.toLowerCase()).single();
+      
+      if (profData) {
+        setProfile(profData);
+        targetUserId = profData.id;
+      } else if (session && !params.get('u')) {
+        // Se estiver logado e na home sem slug, tenta carregar o próprio perfil
+        const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (ownProf) {
+          setProfile(ownProf);
+          targetUserId = ownProf.id;
         }
       }
 
@@ -77,7 +74,7 @@ const App: React.FC = () => {
         if (nRes.data) setNews(nRes.data);
       }
     } catch (err) {
-      console.error("Fetch Data Critical Failure:", err);
+      console.error("Fetch Data Failure:", err);
     } finally {
       setLoading(false);
     }
@@ -107,7 +104,7 @@ const App: React.FC = () => {
     try {
         window.history.pushState({ view }, '', finalPath);
     } catch (e) {
-        console.warn("PushState failed (likely origin mismatch), switching view locally.");
+        console.warn("Navigation fallback");
     }
     
     setCurrentView(view);
@@ -129,8 +126,8 @@ const App: React.FC = () => {
         currentView={currentView} 
       />
 
-      <main className={`flex-grow pt-20 pb-24 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
-        {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} />}
+      <main className={`flex-grow pt-20 pb-32 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+        {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} isGuest={isGuest} />}
         {currentView === 'NEWS_LIST' && <NewsList news={news} onBack={() => navigateTo('HOME')} />}
         {currentView === 'PRIVACY' && <Privacy onBack={() => navigateTo('HOME')} />}
         {currentView === 'ADMIN' && (
