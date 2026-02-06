@@ -6,20 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gerenciador TeamBot | Central Premium</title>
     
-    <!-- Scripts de Limpeza de Cache (Crucial para ver atualizações) -->
+    <!-- Force Update Logic -->
     <script>
+      console.log('TeamBot Engine: v1.0.6-build-feb06');
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
-            console.log('TeamBot: Service Worker removido para atualização.');
-          }
+        navigator.serviceWorker.getRegistrations().then(regs => {
+          for(let reg of regs) reg.unregister();
         });
       }
-      // Limpa cache de bfcache
-      window.onpageshow = function(event) {
-        if (event.persisted) { window.location.reload(); }
-      };
     </script>
 
     <!-- Primary Meta Tags -->
@@ -27,10 +21,7 @@
     <meta name="description" content="Central inteligente de links e novidades premium com design ultra-moderno.">
 
     <base href="/">
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-    <meta http-equiv="Pragma" content="no-cache" />
-    <meta http-equiv="Expires" content="0" />
-
+    
     <!-- PWA Brand Assets -->
     <link rel="manifest" href="/manifest.json">
     <link rel="icon" type="image/png" href="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
@@ -44,30 +35,24 @@
     
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #020617; color: #f8fafc; margin: 0; overflow-x: hidden; -webkit-tap-highlight-color: transparent; }
-        .glass { background: rgba(255, 255, 255, 0.03); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
-        .glass-premium { background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); border-top: 1px solid rgba(255, 255, 255, 0.15); }
+        .glass-premium { background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.1); }
         .gradient-bg { background: radial-gradient(circle at 50% -20%, rgba(99, 102, 241, 0.15) 0%, rgba(2, 6, 23, 0) 70%); background-attachment: fixed; }
-        @keyframes mascot-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-15px) rotate(5deg); } }
-        .animate-mascot { animation: mascot-float 5s ease-in-out infinite; }
-        .icon-glow { filter: drop-shadow(0 0 12px rgba(99, 102, 241, 0.4)); }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.1); border-radius: 10px; }
+        @keyframes mascot-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        .animate-mascot { animation: mascot-float 4s ease-in-out infinite; }
+        .icon-glow { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.3)); }
     </style>
 
     <script type="importmap">
-{
-  "imports": {
-    "react": "https://esm.sh/react@19.0.0",
-    "react-dom": "https://esm.sh/react-dom@19.0.0",
-    "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
-    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.48.1",
-    "@google/genai": "https://esm.sh/@google/genai@1.40.0",
-    "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/"
-  }
-}
-</script>
+    {
+      "imports": {
+        "react": "https://esm.sh/react@19.0.0",
+        "react-dom": "https://esm.sh/react-dom@19.0.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
+        "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.48.1",
+        "@google/genai": "https://esm.sh/@google/genai@1.40.0"
+      }
+    }
+    </script>
 </head>
 <body class="gradient-bg min-h-screen">
     <div id="root"></div>
