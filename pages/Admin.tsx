@@ -53,6 +53,15 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     setTimeout(() => setNotifications(prev => prev.filter(n => n.id !== id)), 4000);
   };
 
+  const closeLinkPostForms = () => {
+    setShowAddLinkForm(false);
+    setShowAddNewsForm(false);
+    setEditingLinkId(null);
+    setEditingPostId(null);
+    setNewLink({ title: '', description: '', url: '', icon_url: '' });
+    setNewPost({ title: '', content: '', image_url: '', link_url: '' });
+  };
+
   const uploadFile = async (file: File, path: string) => {
     try {
       const fileExt = file.name.split('.').pop();
@@ -182,8 +191,14 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
           </div>
 
           <form onSubmit={handleAuth} className="space-y-4">
-            <input type="email" placeholder="E-mail Corporativo" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-950 p-4 rounded-xl border border-white/5 outline-none focus:border-indigo-500/50 text-white text-sm" required />
-            <input type="password" placeholder="Chave de Acesso" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-950 p-4 rounded-xl border border-white/5 outline-none focus:border-indigo-500/50 text-white text-sm" required />
+            <div className="space-y-1">
+              <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail</label>
+              <input type="email" placeholder="seu@email.com" value={email} onChange={e => setEmail(e.target.value)} className="w-full bg-slate-950 p-4 rounded-xl border border-white/5 outline-none focus:border-indigo-500/50 text-white text-sm" required />
+            </div>
+            <div className="space-y-1">
+              <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Senha</label>
+              <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-950 p-4 rounded-xl border border-white/5 outline-none focus:border-indigo-500/50 text-white text-sm" required />
+            </div>
             <button disabled={loading} className="w-full bg-indigo-600 py-5 rounded-xl font-black text-white uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
               {loading ? 'Sincronizando...' : authMode === 'LOGIN' ? 'Autenticar' : 'Finalizar Cadastro'}
             </button>
@@ -193,7 +208,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             onClick={() => setAuthMode(authMode === 'LOGIN' ? 'SIGNUP' : 'LOGIN')}
             className="w-full mt-6 text-[9px] font-black uppercase text-slate-500 hover:text-white transition-colors tracking-widest"
           >
-            {authMode === 'LOGIN' ? 'Novo por aqui? Iniciar meu Perfil' : 'Já sou um TeamBot? Acessar Conta'}
+            {authMode === 'LOGIN' ? 'Novo por aqui? Criar perfil' : 'Já sou um TeamBot? Acessar Conta'}
           </button>
         </div>
       ) : (
@@ -217,7 +232,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
 
           <div className="flex gap-2 p-1.5 glass-premium rounded-2xl border border-white/5">
             {(['LINKS', 'NEWS', 'PROFILE'] as const).map(tab => (
-              <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-grow py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+              <button key={tab} onClick={() => { setActiveTab(tab); closeLinkPostForms(); }} className={`flex-grow py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
                 {tab === 'LINKS' ? 'Links' : tab === 'NEWS' ? 'Updates' : 'Perfil'}
               </button>
             ))}
@@ -270,9 +285,11 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             
             {activeTab === 'LINKS' && (
               <div className="space-y-4">
-                <button onClick={() => { setShowAddLinkForm(!showAddLinkForm); setEditingLinkId(null); setNewLink({ title: '', description: '', url: '', icon_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
-                  {showAddLinkForm ? 'Fechar Formulário' : '+ Novo Link Estratégico'}
-                </button>
+                {!showAddLinkForm && (
+                  <button onClick={() => { setShowAddLinkForm(true); setEditingLinkId(null); setNewLink({ title: '', description: '', url: '', icon_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
+                    + Novo Link Estratégico
+                  </button>
+                )}
                 {showAddLinkForm && (
                   <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -281,14 +298,18 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                       if(editingLinkId) await supabase.from('tools').update(newLink).eq('id', editingLinkId);
                       else await supabase.from('tools').insert([{ ...newLink, user_id: session.user.id }]);
                       addNotification('Link Salvo!', 'success');
-                      setShowAddLinkForm(false);
+                      closeLinkPostForms();
                       await fetchUserData(session.user.id);
                     } catch (err: any) {
                       addNotification(err.message, 'error');
                     } finally {
                       setLoading(false);
                     }
-                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl">
+                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative">
+                    <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    
                     <div className="flex gap-4 items-start">
                        <div className="w-20 h-20 shrink-0 bg-slate-900 rounded-2xl overflow-hidden border border-white/5 relative flex items-center justify-center">
                          <img src={newLink.icon_url || BRAND_CONFIG.FALLBACK_URL} className="w-full h-full object-contain p-2" alt="" />
@@ -300,15 +321,18 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                            }
                          }} />
                        </div>
-                       <div className="flex-grow space-y-2">
+                       <div className="flex-grow space-y-2 pt-2">
                           <input placeholder="Título do Link" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-sm font-bold text-white border border-white/5" required />
                           <input placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-xs font-mono text-indigo-300 border border-white/5" required />
                        </div>
                     </div>
                     <textarea placeholder="Explicação rápida" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-20 resize-none" />
-                    <button disabled={loading} className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
-                      {loading ? 'Sincronizando...' : 'Confirmar e Publicar'}
-                    </button>
+                    <div className="flex gap-3 pt-2">
+                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-400 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
+                      <button disabled={loading} className="flex-[2] bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                        {loading ? 'Sincronizando...' : 'Confirmar e Publicar'}
+                      </button>
+                    </div>
                   </form>
                 )}
                 <div className="space-y-3">
@@ -333,9 +357,11 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
 
             {activeTab === 'NEWS' && (
               <div className="space-y-4">
-                <button onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); setNewPost({ title: '', content: '', image_url: '', link_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
-                  {showAddNewsForm ? 'Fechar Formulário' : '+ Nova Notícia de Impacto'}
-                </button>
+                {!showAddNewsForm && (
+                  <button onClick={() => { setShowAddNewsForm(true); setEditingPostId(null); setNewPost({ title: '', content: '', image_url: '', link_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
+                    + Nova Notícia de Impacto
+                  </button>
+                )}
                 {showAddNewsForm && (
                   <form onSubmit={async (e) => {
                     e.preventDefault();
@@ -344,14 +370,18 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                       if(editingPostId) await supabase.from('news').update(newPost).eq('id', editingPostId);
                       else await supabase.from('news').insert([{ ...newPost, user_id: session.user.id }]);
                       addNotification('Notícia Publicada!', 'success');
-                      setShowAddNewsForm(false);
+                      closeLinkPostForms();
                       await fetchUserData(session.user.id);
                     } catch (err: any) {
                       addNotification(err.message, 'error');
                     } finally {
                       setLoading(false);
                     }
-                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl">
+                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative">
+                    <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                    
                     <div className="relative h-40 bg-slate-900 rounded-3xl overflow-hidden border border-white/5 group cursor-pointer flex items-center justify-center">
                        <img src={newPost.image_url || BRAND_CONFIG.FALLBACK_URL} className="w-full h-full object-cover opacity-50" alt="" />
                        <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={async (e) => {
@@ -365,9 +395,12 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     </div>
                     <input placeholder="Título Chamativo" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5" required />
                     <textarea placeholder="Conteúdo da atualização..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-32 resize-none" required />
-                    <button disabled={loading} className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
-                      {loading ? 'Sincronizando...' : 'Disparar Notícia'}
-                    </button>
+                    <div className="flex gap-3 pt-2">
+                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-400 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
+                      <button disabled={loading} className="flex-[2] bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                        {loading ? 'Sincronizando...' : 'Disparar Notícia'}
+                      </button>
+                    </div>
                   </form>
                 )}
                 <div className="space-y-3">
