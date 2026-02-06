@@ -72,7 +72,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         {latestNews ? (
           <button 
             onClick={() => onNavigate('NEWS_LIST')}
-            className="w-full glass-premium rounded-[2rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shadow-2xl"
+            className="w-full glass-premium rounded-[2rem] flex flex-col hover:border-indigo-500/40 transition-all text-left group overflow-hidden relative shadow-[0_10px_30px_rgba(0,0,0,0.5),0_0_20px_rgba(79,70,229,0.1)]"
           >
             <div className="h-32 w-full overflow-hidden relative border-b border-white/5">
               <img 
@@ -100,7 +100,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         ) : null}
       </section>
 
-      {/* Links Section - COMPACT & CLEAN (ULTRA MINIMAL) */}
+      {/* Links Section */}
       <section className="w-full space-y-3 px-2 pb-20">
         <div className="flex items-center gap-3 mb-4 px-4">
           <div className="w-6 h-6 rounded-lg bg-indigo-600/10 flex items-center justify-center border border-indigo-500/20">
@@ -110,7 +110,7 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
         </div>
 
         {links.length > 0 ? (
-          <div className="grid grid-cols-1 gap-2.5">
+          <div className="grid grid-cols-1 gap-4">
             {links.map((link) => (
               <a 
                 key={link.id}
@@ -118,28 +118,30 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate }) => {
                 target="_blank"
                 rel="noopener noreferrer"
                 onClick={() => handleLinkClick(link.id)}
-                className="glass-premium rounded-2xl p-2.5 flex items-center gap-4 group active:scale-[0.98] transition-all duration-300 shadow-md border border-white/5 hover:border-indigo-500/30 overflow-hidden"
+                className="glass-premium rounded-2xl p-4 flex items-center gap-4 group active:scale-[0.98] transition-all duration-300 shadow-[0_4px_20px_rgba(0,0,0,0.3),0_0_15px_rgba(79,70,229,0.05)] border border-white/5 hover:border-indigo-500/40 hover:shadow-[0_4px_25px_rgba(0,0,0,0.4),0_0_20px_rgba(79,70,229,0.15)] overflow-hidden"
               >
-                {/* Imagem Arredondada e Reduzida */}
-                <div className="w-11 h-11 shrink-0 bg-slate-900/80 rounded-xl flex items-center justify-center border border-white/5 overflow-hidden group-hover:border-indigo-500/40 transition-colors">
+                <div className="w-14 h-14 shrink-0 bg-slate-900/80 rounded-2xl flex items-center justify-center border border-white/5 overflow-hidden group-hover:border-indigo-500/40 transition-colors">
                   <img 
                     src={link.icon_url || GET_FALLBACK(link.title)} 
                     onError={(e) => handleImageError(e, link.title)}
                     alt="" 
-                    className="w-7 h-7 object-contain icon-glow group-hover:scale-110 transition-transform duration-500" 
+                    className="w-9 h-9 object-contain icon-glow group-hover:scale-110 transition-transform duration-500" 
                   />
                 </div>
 
-                {/* Título Pequeno e Limpo ao lado da imagem */}
                 <div className="flex-grow min-w-0">
-                  <h3 className="text-white font-black text-[11px] tracking-wide uppercase truncate group-hover:text-indigo-300 transition-colors">
+                  <h3 className="text-white font-black text-[12px] tracking-wide uppercase truncate group-hover:text-indigo-300 transition-colors">
                     {link.title}
                   </h3>
+                  {link.description && (
+                    <p className="text-slate-500 text-[9px] font-medium leading-tight mt-1 line-clamp-2">
+                      {link.description}
+                    </p>
+                  )}
                 </div>
 
-                {/* Seta discreta */}
                 <div className="shrink-0 opacity-10 group-hover:opacity-100 group-hover:translate-x-1 transition-all pr-1">
-                   <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-400"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" className="text-indigo-400"><polyline points="9 18 15 12 9 6"></polyline></svg>
                 </div>
               </a>
             ))}
