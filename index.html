@@ -10,20 +10,6 @@
     <meta name="title" content="Gerenciador TeamBot | Central Premium">
     <meta name="description" content="Central inteligente de links e novidades premium com design ultra-moderno.">
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://tbotlink.com/">
-    <meta property="og:title" content="Gerenciador TeamBot | Central Premium">
-    <meta property="og:description" content="Central inteligente de links e novidades premium com design ultra-moderno.">
-    <meta property="og:image" content="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
-
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="https://tbotlink.com/">
-    <meta property="twitter:title" content="Gerenciador TeamBot | Central Premium">
-    <meta property="twitter:description" content="Central inteligente de links e novidades premium com design ultra-moderno.">
-    <meta property="twitter:image" content="https://ywqjhjxiyvbimcbqjnnc.supabase.co/storage/v1/object/public/teambot/Macote%20TeamBot.png">
-
     <!-- Redirecionamento de SPA e Cache Control -->
     <base href="/">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -108,9 +94,9 @@
     "react-dom": "https://esm.sh/react-dom@19.0.0",
     "react-dom/client": "https://esm.sh/react-dom@19.0.0/client",
     "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@2.48.1",
+    "@google/genai": "https://esm.sh/@google/genai@1.40.0",
     "react-dom/": "https://esm.sh/react-dom@^19.2.4/",
-    "react/": "https://esm.sh/react@^19.2.4/",
-    "@google/genai": "https://esm.sh/@google/genai@^1.40.0"
+    "react/": "https://esm.sh/react@^19.2.4/"
   }
 }
 </script>
@@ -118,14 +104,5 @@
 <body class="gradient-bg min-h-screen">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
-    <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js')
-            .then(reg => console.log('TeamBot PWA: Online'))
-            .catch(err => console.log('TeamBot PWA Error', err));
-        });
-      }
-    </script>
 </body>
 </html>

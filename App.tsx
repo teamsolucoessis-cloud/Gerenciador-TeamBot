@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { ViewType, Profile, LinkItem, News } from './types';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -12,22 +12,22 @@ import { supabase } from './supabaseClient';
 import { BRAND_CONFIG } from './brand';
 
 const INITIAL_PROFILE: Profile = {
-  id: '', // Deixando vazio para não disparar erro de UUID antes da sessão carregar
+  id: '', 
   name: 'Usuário TeamBot',
-  bio: 'Personalize sua bio no painel para descrever sua autoridade e como você ajuda seus clientes.',
+  bio: 'Personalize sua bio no painel para descrever sua autoridade.',
   avatar_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   mascot_url: BRAND_CONFIG.OFFICIAL_MASCOTE_URL,
   slug: 'teambot'
 };
 
 const App: React.FC = () => {
-  const getInitialView = (): ViewType => {
+  const getInitialView = useCallback((): ViewType => {
     const path = window.location.pathname;
     if (path.includes('/admin')) return 'ADMIN';
     if (path.includes('/privacidade')) return 'PRIVACY';
     if (path.includes('/novidades')) return 'NEWS_LIST';
     return 'HOME';
-  };
+  }, []);
 
   const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [userNotFound, setUserNotFound] = useState(false);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams(window.location.search);
@@ -49,8 +49,8 @@ const App: React.FC = () => {
         if (data) {
           setProfile(data);
           targetUserId = data.id;
-        } else if (error && error.message !== "Supabase não configurado") {
-          setUserNotFound(true);
+        } else if (error && error.code !== 'PGRST116') {
+          console.warn("User fetch error:", error);
         }
       } else {
         const sessionRes = await supabase.auth.getSession();
@@ -77,24 +77,20 @@ const App: React.FC = () => {
         if (nRes.data) setNews(nRes.data);
       }
     } catch (err) {
-      console.error("Fetch error:", err);
+      console.error("Fetch Data Critical Failure:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchData();
     const handlePop = (e: any) => {
-      if (e.state?.view) {
-        setCurrentView(e.state.view);
-      } else {
-        setCurrentView(getInitialView());
-      }
+      setCurrentView(e.state?.view || getInitialView());
     };
     window.addEventListener('popstate', handlePop);
     return () => window.removeEventListener('popstate', handlePop);
-  }, []);
+  }, [fetchData, getInitialView]);
 
   const navigateTo = (view: ViewType) => {
     const paths: Record<ViewType, string> = {
@@ -108,21 +104,16 @@ const App: React.FC = () => {
     const u = params.get('u');
     const finalPath = u ? `${paths[view]}?u=${u}` : paths[view];
 
-    window.history.pushState({ view }, '', finalPath);
+    try {
+        window.history.pushState({ view }, '', finalPath);
+    } catch (e) {
+        console.warn("PushState failed (likely origin mismatch), switching view locally.");
+    }
+    
     setCurrentView(view);
     setIsSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
-
-  if (userNotFound) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
-        <h1 className="text-4xl font-black mb-4">404</h1>
-        <p className="text-slate-400 mb-8">Perfil não encontrado no ecossistema TeamBot.</p>
-        <button onClick={() => window.location.href = '/'} className="bg-indigo-600 px-8 py-4 rounded-2xl font-bold">Voltar</button>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex flex-col bg-slate-950 text-slate-200">
@@ -131,9 +122,14 @@ const App: React.FC = () => {
         onAdminClick={() => navigateTo('ADMIN')}
         mascotUrl={profile.mascot_url}
       />
-      <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} onNavigate={navigateTo} currentView={currentView} />
+      <Sidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+        onNavigate={navigateTo} 
+        currentView={currentView} 
+      />
 
-      <main className={`flex-grow pt-20 pb-24 px-4 max-w-2xl mx-auto w-full transition-opacity ${loading && !links.length ? 'opacity-50' : 'opacity-100'}`}>
+      <main className={`flex-grow pt-20 pb-24 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
         {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} />}
         {currentView === 'NEWS_LIST' && <NewsList news={news} onBack={() => navigateTo('HOME')} />}
         {currentView === 'PRIVACY' && <Privacy onBack={() => navigateTo('HOME')} />}
