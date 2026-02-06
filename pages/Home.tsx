@@ -91,10 +91,13 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
               </div>
             </div>
             <div className="p-6">
-              <h3 className="text-white font-black text-lg mb-1 tracking-tight group-hover:text-indigo-300 transition-colors uppercase truncate">
+              <h3 className="text-white font-black text-lg mb-2 tracking-tight group-hover:text-indigo-300 transition-colors uppercase leading-tight">
                 {latestNews.title}
               </h3>
-              <div className="flex items-center gap-2 text-indigo-400 text-[8px] font-black uppercase tracking-[0.2em] mt-2 group-hover:translate-x-1 transition-transform">
+              <p className="text-slate-400 text-[10px] line-clamp-2 uppercase font-bold tracking-tight opacity-60 leading-relaxed mb-4">
+                {latestNews.content}
+              </p>
+              <div className="flex items-center gap-2 text-indigo-400 text-[8px] font-black uppercase tracking-[0.2em] group-hover:translate-x-1 transition-transform">
                  Ler atualização completa
                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
               </div>
