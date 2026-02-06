@@ -17,8 +17,8 @@ const Footer: React.FC = () => {
              </a>
           </div>
         </div>
-        {/* Marcador de Versão para Debug do Deploy */}
-        <span className="text-[7px] text-indigo-500/50 font-bold mt-2 uppercase tracking-widest">Build 06.02.25-FINAL-APPROVED</span>
+        {/* Marcador de Versão Segura */}
+        <span className="text-[7px] text-emerald-500/50 font-bold mt-2 uppercase tracking-widest">Build 06.02.25-v1.0.9-CLEAN</span>
       </div>
     </footer>
   );
