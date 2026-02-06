@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Profile, LinkItem, News } from '../types';
 import { supabase } from '../supabaseClient';
 import { GoogleGenAI } from "@google/genai";
@@ -93,16 +93,21 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
 
   const fetchUserData = async (userId: string) => {
     try {
+      setLoading(true);
       const { data: prof } = await supabase.from('profiles').select('*').eq('id', userId).single();
       if (prof) {
         setProfile(prof);
-        generateAIInsight(prof.name);
+        if (!isAssistantLoading) generateAIInsight(prof.name);
       }
       const { data: lks } = await supabase.from('tools').select('*').eq('user_id', userId).order('created_at', { ascending: false });
       if (lks) setLinks(lks);
       const { data: nws } = await supabase.from('news').select('*').eq('user_id', userId).order('created_at', { ascending: false });
       if (nws) setNews(nws);
-    } catch (e) { console.error(e); }
+    } catch (e) { 
+      console.error(e); 
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -113,7 +118,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
         setSession(data.session);
-        fetchUserData(data.session!.user.id);
+        await fetchUserData(data.session!.user.id);
         addNotification('Bem-vindo de volta!', 'success');
       } else {
         const { data, error } = await supabase.auth.signUp({ email, password });
@@ -131,13 +136,33 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     setLoading(true);
     const { error } = await supabase.from('profiles').upsert({ ...profile, updated_at: new Date() });
     if (error) addNotification(error.message, 'error');
-    else addNotification('Perfil Atualizado!', 'success');
+    else {
+      addNotification('Perfil Atualizado!', 'success');
+      await fetchUserData(session.user.id);
+    }
     setLoading(false);
+  };
+
+  const handleDeleteLink = async (id: string) => {
+    if(!confirm('Deseja excluir este link estrategicamente?')) return;
+    const { error } = await supabase.from('tools').delete().eq('id', id);
+    if (!error) {
+      addNotification('Link Removido', 'info');
+      await fetchUserData(session.user.id);
+    }
+  };
+
+  const handleDeleteNews = async (id: string) => {
+    if(!confirm('Deseja remover esta atualização?')) return;
+    const { error } = await supabase.from('news').delete().eq('id', id);
+    if (!error) {
+      addNotification('Update Removido', 'info');
+      await fetchUserData(session.user.id);
+    }
   };
 
   return (
     <div className="relative pb-32 animate-in fade-in duration-700">
-      {/* Notifications */}
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs space-y-2 pointer-events-none">
         {notifications.map(n => (
           <div key={n.id} className="glass-premium p-3 rounded-2xl border-l-4 border-indigo-500 bg-slate-950/90 text-[10px] font-black uppercase text-white shadow-2xl pointer-events-auto">
@@ -173,21 +198,16 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
         </div>
       ) : (
         <div className="space-y-8">
-          {/* Dashboard contents... (already implemented) */}
-          {/* AI Assistant Banner */}
           <div className="glass-premium p-5 rounded-[2rem] border-indigo-500/20 flex items-center gap-5 relative overflow-hidden shadow-[0_0_30px_rgba(79,70,229,0.1)]">
             <div className="w-14 h-14 shrink-0 animate-mascot">
               <img src={profile.mascot_url || BRAND_CONFIG.OFFICIAL_MASCOTE_URL} className="w-full h-full object-contain icon-glow" alt="IA" />
             </div>
             <div className="min-w-0">
-              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Status: Inteligência Ativa</p>
+              <p className="text-[8px] font-black text-indigo-400 uppercase tracking-widest mb-1">Status: {loading ? 'Sincronizando...' : 'Inteligência Ativa'}</p>
               <p className="text-white text-[11px] font-medium italic leading-relaxed">
                 {isAssistantLoading ? "Calculando variáveis..." : `"${assistantMessage}"`}
               </p>
             </div>
-            <button onClick={() => generateAIInsight(profile.name)} className="absolute top-4 right-4 text-white/20 hover:text-indigo-400 transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><path d="M21 2v6h-6"></path><path d="M3 12a9 9 0 0 1 15-6.7L21 8"></path><path d="M3 22v-6h6"></path><path d="M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-            </button>
           </div>
 
           <div className="flex justify-between items-end px-2">
@@ -195,7 +215,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             <button onClick={() => supabase.auth.signOut()} className="text-[9px] font-black uppercase text-slate-500 bg-white/5 px-4 py-2 rounded-lg hover:text-red-400 transition-colors">Logout</button>
           </div>
 
-          {/* Rest of the admin tabs (Links, News, Profile) would remain as per the previous working version */}
           <div className="flex gap-2 p-1.5 glass-premium rounded-2xl border border-white/5">
             {(['LINKS', 'NEWS', 'PROFILE'] as const).map(tab => (
               <button key={tab} onClick={() => setActiveTab(tab)} className={`flex-grow py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
@@ -249,22 +268,26 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
               </div>
             )}
             
-            {/* Links and News tabs would go here following the same structure from previous stable version */}
             {activeTab === 'LINKS' && (
               <div className="space-y-4">
-                <button onClick={() => { setShowAddLinkForm(!showAddLinkForm); setEditingLinkId(null); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
-                  + Novo Link Estratégico
+                <button onClick={() => { setShowAddLinkForm(!showAddLinkForm); setEditingLinkId(null); setNewLink({ title: '', description: '', url: '', icon_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
+                  {showAddLinkForm ? 'Fechar Formulário' : '+ Novo Link Estratégico'}
                 </button>
                 {showAddLinkForm && (
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     setLoading(true);
-                    if(editingLinkId) await supabase.from('tools').update(newLink).eq('id', editingLinkId);
-                    else await supabase.from('tools').insert([{ ...newLink, user_id: session.user.id }]);
-                    addNotification('Link Salvo!');
-                    setShowAddLinkForm(false);
-                    // Force refresh or update local state
-                    window.location.reload();
+                    try {
+                      if(editingLinkId) await supabase.from('tools').update(newLink).eq('id', editingLinkId);
+                      else await supabase.from('tools').insert([{ ...newLink, user_id: session.user.id }]);
+                      addNotification('Link Salvo!', 'success');
+                      setShowAddLinkForm(false);
+                      await fetchUserData(session.user.id);
+                    } catch (err: any) {
+                      addNotification(err.message, 'error');
+                    } finally {
+                      setLoading(false);
+                    }
                   }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl">
                     <div className="flex gap-4 items-start">
                        <div className="w-20 h-20 shrink-0 bg-slate-900 rounded-2xl overflow-hidden border border-white/5 relative flex items-center justify-center">
@@ -283,41 +306,51 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                        </div>
                     </div>
                     <textarea placeholder="Explicação rápida" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-20 resize-none" />
-                    <button className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">Confirmar e Publicar</button>
+                    <button disabled={loading} className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                      {loading ? 'Sincronizando...' : 'Confirmar e Publicar'}
+                    </button>
                   </form>
                 )}
-                {links.map(l => (
-                  <div key={l.id} className="glass-premium p-4 rounded-2xl flex items-center justify-between group border border-white/5 hover:border-indigo-500/30 transition-all shadow-lg">
-                    <div className="flex items-center gap-4">
-                       <img src={l.icon_url} className="w-10 h-10 object-contain rounded-lg bg-slate-900 p-1 border border-white/5" alt="" />
-                       <div>
-                          <p className="text-white font-black text-[10px] uppercase truncate max-w-[150px]">{l.title}</p>
-                          <p className="text-slate-500 text-[8px] font-bold uppercase tracking-widest">{l.click_count || 0} Conversões</p>
-                       </div>
+                <div className="space-y-3">
+                  {links.map(l => (
+                    <div key={l.id} className="glass-premium p-4 rounded-2xl flex items-center justify-between group border border-white/5 hover:border-indigo-500/30 transition-all shadow-lg">
+                      <div className="flex items-center gap-4">
+                         <img src={l.icon_url} className="w-10 h-10 object-contain rounded-lg bg-slate-900 p-1 border border-white/5" alt="" />
+                         <div>
+                            <p className="text-white font-black text-[10px] uppercase truncate max-w-[150px]">{l.title}</p>
+                            <p className="text-slate-500 text-[8px] font-bold uppercase tracking-widest">{l.click_count || 0} Conversões</p>
+                         </div>
+                      </div>
+                      <div className="flex gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => { setNewLink({...l}); setEditingLinkId(l.id); setShowAddLinkForm(true); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs">✎</button>
+                        <button onClick={() => handleDeleteLink(l.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs hover:text-red-400">✕</button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setNewLink({...l}); setEditingLinkId(l.id); setShowAddLinkForm(true); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs">✎</button>
-                      <button onClick={async () => { if(confirm('Excluir?')) await supabase.from('tools').delete().eq('id', l.id); window.location.reload(); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs hover:text-red-400">✕</button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
 
             {activeTab === 'NEWS' && (
               <div className="space-y-4">
-                <button onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
-                  + Nova Notícia de Impacto
+                <button onClick={() => { setShowAddNewsForm(!showAddNewsForm); setEditingPostId(null); setNewPost({ title: '', content: '', image_url: '', link_url: '' }); }} className="w-full glass-premium p-6 rounded-2xl text-indigo-400 font-black text-[10px] uppercase tracking-widest border-dashed border-2 border-indigo-500/20 hover:bg-indigo-500/5 transition-colors">
+                  {showAddNewsForm ? 'Fechar Formulário' : '+ Nova Notícia de Impacto'}
                 </button>
                 {showAddNewsForm && (
                   <form onSubmit={async (e) => {
                     e.preventDefault();
                     setLoading(true);
-                    if(editingPostId) await supabase.from('news').update(newPost).eq('id', editingPostId);
-                    else await supabase.from('news').insert([{ ...newPost, user_id: session.user.id }]);
-                    addNotification('Notícia Publicada!');
-                    setShowAddNewsForm(false);
-                    window.location.reload();
+                    try {
+                      if(editingPostId) await supabase.from('news').update(newPost).eq('id', editingPostId);
+                      else await supabase.from('news').insert([{ ...newPost, user_id: session.user.id }]);
+                      addNotification('Notícia Publicada!', 'success');
+                      setShowAddNewsForm(false);
+                      await fetchUserData(session.user.id);
+                    } catch (err: any) {
+                      addNotification(err.message, 'error');
+                    } finally {
+                      setLoading(false);
+                    }
                   }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl">
                     <div className="relative h-40 bg-slate-900 rounded-3xl overflow-hidden border border-white/5 group cursor-pointer flex items-center justify-center">
                        <img src={newPost.image_url || BRAND_CONFIG.FALLBACK_URL} className="w-full h-full object-cover opacity-50" alt="" />
@@ -332,21 +365,25 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     </div>
                     <input placeholder="Título Chamativo" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5" required />
                     <textarea placeholder="Conteúdo da atualização..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-32 resize-none" required />
-                    <button className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">Disparar Notícia</button>
+                    <button disabled={loading} className="w-full bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
+                      {loading ? 'Sincronizando...' : 'Disparar Notícia'}
+                    </button>
                   </form>
                 )}
-                {news.map(n => (
-                  <div key={n.id} className="glass-premium p-3 rounded-2xl flex items-center justify-between group border border-white/5 hover:border-indigo-500/30 transition-all shadow-lg">
-                    <div className="flex items-center gap-4">
-                       <img src={n.image_url} className="w-14 h-10 object-cover rounded-lg bg-slate-900 border border-white/5" alt="" />
-                       <p className="text-white font-black text-[10px] uppercase truncate max-w-[150px]">{n.title}</p>
+                <div className="space-y-3">
+                  {news.map(n => (
+                    <div key={n.id} className="glass-premium p-3 rounded-2xl flex items-center justify-between group border border-white/5 hover:border-indigo-500/30 transition-all shadow-lg">
+                      <div className="flex items-center gap-4">
+                         <img src={n.image_url} className="w-14 h-10 object-cover rounded-lg bg-slate-900 border border-white/5" alt="" />
+                         <p className="text-white font-black text-[10px] uppercase truncate max-w-[150px]">{n.title}</p>
+                      </div>
+                      <div className="flex gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
+                        <button onClick={() => { setNewPost({...n}); setEditingPostId(n.id); setShowAddNewsForm(true); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs">✎</button>
+                        <button onClick={() => handleDeleteNews(n.id)} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs hover:text-red-400">✕</button>
+                      </div>
                     </div>
-                    <div className="flex gap-2 opacity-30 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => { setNewPost({...n}); setEditingPostId(n.id); setShowAddNewsForm(true); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs">✎</button>
-                      <button onClick={async () => { if(confirm('Excluir?')) await supabase.from('news').delete().eq('id', n.id); window.location.reload(); }} className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-xs hover:text-red-400">✕</button>
-                    </div>
-                  </div>
-                ))}
+                  ))}
+                </div>
               </div>
             )}
           </div>
