@@ -6,12 +6,23 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Gerenciador TeamBot | Central Premium</title>
     
-    <!-- Force Update Logic -->
+    <!-- Force Update Logic v1.0.7 -->
     <script>
-      console.log('TeamBot Engine: v1.0.6-build-feb06');
+      console.log('TeamBot Engine: v1.0.7-deploy-approved');
+      // Força a limpeza de cache de versões antigas do Service Worker e do próprio navegador
       if ('serviceWorker' in navigator) {
         navigator.serviceWorker.getRegistrations().then(regs => {
-          for(let reg of regs) reg.unregister();
+          for(let reg of regs) {
+            reg.unregister().then(() => {
+              console.log('SW Unregistered for update');
+            });
+          }
+        });
+      }
+      // Limpa cache de busca se suportado
+      if ('caches' in window) {
+        caches.keys().then(names => {
+          for (let name of names) caches.delete(name);
         });
       }
     </script>
@@ -40,6 +51,10 @@
         @keyframes mascot-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
         .animate-mascot { animation: mascot-float 4s ease-in-out infinite; }
         .icon-glow { filter: drop-shadow(0 0 8px rgba(99, 102, 241, 0.3)); }
+        /* Custom scrollbar para manter estética dark */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
     </style>
 
     <script type="importmap">
@@ -56,6 +71,6 @@
 </head>
 <body class="gradient-bg min-h-screen">
     <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
+    <script type="module" src="/index.tsx?v=1.0.7"></script>
 </body>
 </html>
