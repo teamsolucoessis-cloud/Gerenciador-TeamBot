@@ -1,13 +1,24 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Detecção segura de variáveis de ambiente (Vite standard)
-const getEnv = (key: string): string => {
-  return (import.meta as any).env?.[key] || (window as any).process?.env?.[key] || '';
+// Função de detecção ultra-segura para evitar erros de referência no build
+const getEnvVar = (key: string): string => {
+  try {
+    // Tenta Vite env
+    const viteEnv = (import.meta as any).env?.[key];
+    if (viteEnv) return viteEnv;
+
+    // Tenta Netlify/Node process env (via window polyfill se necessário)
+    const procEnv = (window as any).process?.env?.[key];
+    if (procEnv) return procEnv;
+  } catch (e) {
+    // Silencia erros de acesso a ambiente no build
+  }
+  return '';
 };
 
-const supabaseUrl = getEnv('VITE_SUPABASE_URL');
-const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
 
 const createMockClient = () => {
   const mockResponse = { data: null, error: null };
@@ -33,11 +44,10 @@ const createMockClient = () => {
   } as any;
 };
 
-// Inicialização condicional baseada na presença das chaves
-export const supabase = (supabaseUrl && supabaseAnonKey && supabaseUrl !== '') 
+export const supabase = (supabaseUrl && supabaseAnonKey && supabaseUrl.startsWith('http')) 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createMockClient();
 
 if (supabaseUrl && supabaseAnonKey) {
-  console.log('%c TeamBot: Cloud Core Active ', 'background: #10b981; color: #fff; padding: 2px 5px; border-radius: 4px;');
+  console.log('%c TeamBot: Cloud Synced ', 'color: #10b981; font-weight: bold;');
 }
