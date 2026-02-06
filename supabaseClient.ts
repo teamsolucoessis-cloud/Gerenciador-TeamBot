@@ -1,9 +1,13 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-// Usando import.meta.env que é o padrão do Vite para variáveis expostas
-const supabaseUrl = (import.meta as any).env?.VITE_SUPABASE_URL || ''; 
-const supabaseAnonKey = (import.meta as any).env?.VITE_SUPABASE_ANON_KEY || '';
+// Detecção segura de variáveis de ambiente (Vite standard)
+const getEnv = (key: string): string => {
+  return (import.meta as any).env?.[key] || (window as any).process?.env?.[key] || '';
+};
+
+const supabaseUrl = getEnv('VITE_SUPABASE_URL');
+const supabaseAnonKey = getEnv('VITE_SUPABASE_ANON_KEY');
 
 const createMockClient = () => {
   const mockResponse = { data: null, error: null };
@@ -29,11 +33,11 @@ const createMockClient = () => {
   } as any;
 };
 
-export const supabase = (supabaseUrl && supabaseAnonKey) 
+// Inicialização condicional baseada na presença das chaves
+export const supabase = (supabaseUrl && supabaseAnonKey && supabaseUrl !== '') 
   ? createClient(supabaseUrl, supabaseAnonKey)
   : createMockClient();
 
-// Silenciando logs técnicos em produção, mantendo apenas status essencial
 if (supabaseUrl && supabaseAnonKey) {
-  console.log('%c TeamBot Cloud: Connected ', 'color: #10b981; font-weight: bold;');
+  console.log('%c TeamBot: Cloud Core Active ', 'background: #10b981; color: #fff; padding: 2px 5px; border-radius: 4px;');
 }
