@@ -41,27 +41,32 @@ const App: React.FC = () => {
     try {
       setLoading(true);
       const params = new URLSearchParams(window.location.search);
-      // Se não houver ?u=, usamos o slug da vitrine definido no brand.ts
-      const slug = params.get('u') || BRAND_CONFIG.SHOWCASE_SLUG;
+      const urlSlug = params.get('u');
       
-      let targetUserId = null;
-
-      // 1. Verificar se o usuário está logado para decidir se mostra o CTA
       const { data: { session } } = await supabase.auth.getSession();
       setIsGuest(!session);
 
-      // 2. Buscar perfil pelo Slug (Vitrine ou Usuário específico)
-      const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slug.toLowerCase()).single();
-      
-      if (profData) {
-        setProfile(profData);
-        targetUserId = profData.id;
-      } else if (session && !params.get('u')) {
-        // Se estiver logado e na home sem slug, tenta carregar o próprio perfil
+      let targetUserId = null;
+      let finalSlug = urlSlug;
+
+      // Se NÃO houver slug na URL e o usuário estiver LOGADO, buscar o perfil DELE
+      if (!urlSlug && session) {
         const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         if (ownProf) {
           setProfile(ownProf);
           targetUserId = ownProf.id;
+        } else {
+          // Fallback para vitrine se ele logou mas não tem perfil ainda
+          finalSlug = BRAND_CONFIG.SHOWCASE_SLUG;
+        }
+      } 
+      // Se houver slug na URL ou for GUEST (sem slug), buscar pelo slug (ou vitrine)
+      else {
+        const slugToSearch = urlSlug || BRAND_CONFIG.SHOWCASE_SLUG;
+        const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slugToSearch.toLowerCase()).single();
+        if (profData) {
+          setProfile(profData);
+          targetUserId = profData.id;
         }
       }
 

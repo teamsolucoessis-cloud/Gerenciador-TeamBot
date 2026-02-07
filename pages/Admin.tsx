@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Profile, LinkItem, News } from '../types';
 import { supabase } from '../supabaseClient';
@@ -169,6 +170,8 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     }
   };
 
+  const publicLink = `${window.location.origin}/?u=${profile.slug || ''}`;
+
   return (
     <div className="relative pb-32 animate-in fade-in duration-700">
       <div className="fixed top-20 left-1/2 -translate-x-1/2 z-[100] w-full max-w-xs space-y-2 pointer-events-none">
@@ -273,11 +276,40 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                   </div>
 
                   <div className="space-y-4">
-                    <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Seu Nome" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5 outline-none focus:border-indigo-500/40" />
-                    <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="slug-da-url" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-indigo-400 border border-white/5 outline-none focus:border-indigo-500/40" />
-                    <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio Estratégica" className="w-full bg-slate-950 p-4 rounded-xl text-xs font-medium text-slate-400 border border-white/5 h-24 resize-none outline-none focus:border-indigo-500/40" />
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Nome de Exibição</label>
+                      <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Seu Nome" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5 outline-none focus:border-indigo-500/40" />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Link Público do Seu Perfil</label>
+                      <div className="relative">
+                        <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="slug-da-url" className="w-full bg-slate-950 p-4 pl-14 rounded-xl text-sm font-bold text-indigo-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 font-bold uppercase">u=</div>
+                      </div>
+                      <p className="text-[7px] text-slate-600 uppercase font-black tracking-widest mt-1 ml-1 truncate">
+                        Preview: {publicLink}
+                      </p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Bio Estratégica</label>
+                      <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio Estratégica" className="w-full bg-slate-950 p-4 rounded-xl text-xs font-medium text-slate-400 border border-white/5 h-24 resize-none outline-none focus:border-indigo-500/40" />
+                    </div>
                   </div>
-                  <button disabled={loading} onClick={handleSaveProfile} className="w-full bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Sincronizar Dados</button>
+
+                  <div className="flex flex-col gap-3">
+                    <button disabled={loading} onClick={handleSaveProfile} className="w-full bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Sincronizar Dados</button>
+                    
+                    <a 
+                      href={publicLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full glass-premium py-4 rounded-2xl font-black text-indigo-400 text-[9px] uppercase tracking-widest border border-indigo-500/20 text-center hover:bg-indigo-500/5 transition-all"
+                    >
+                      Ver Perfil Público ↗
+                    </a>
+                  </div>
                 </div>
               </div>
             )}

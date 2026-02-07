@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Profile, LinkItem, News, ViewType } from '../types';
 import { supabase } from '../supabaseClient';
@@ -158,17 +159,19 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
         )}
       </section>
 
-      {/* Floating CTA for Guests */}
+      {/* Floating CTA for Guests (Visitors) */}
       {isGuest && (
-        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-40 w-full max-w-[280px] animate-in slide-in-from-bottom-10 duration-1000">
+        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 w-full max-w-[280px] animate-in slide-in-from-bottom-20 duration-1000">
           <button 
             onClick={() => onNavigate('ADMIN')}
-            className="w-full glass-premium p-1 rounded-full group shadow-[0_20px_50px_rgba(0,0,0,0.5),0_0_30px_rgba(79,70,229,0.2)] hover:shadow-[0_25px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(79,70,229,0.4)] transition-all duration-500 active:scale-95"
+            className="w-full glass-premium p-1.5 rounded-full group shadow-[0_25px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(79,70,229,0.3)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.7),0_0_50px_rgba(79,70,229,0.5)] transition-all duration-500 active:scale-95"
           >
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-4 px-6 rounded-full flex items-center justify-center gap-3 border border-white/10 group-hover:from-indigo-500 group-hover:to-purple-500 transition-all">
-               <span className="text-[10px] font-black text-white uppercase tracking-[0.2em] drop-shadow-md">⚡ Criar meu TeamBot</span>
-               <div className="w-5 h-5 bg-white/20 rounded-full flex items-center justify-center">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="text-white"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-4 px-6 rounded-full flex items-center justify-between gap-3 border border-white/10 group-hover:from-indigo-500 group-hover:to-purple-500 transition-all">
+               <div className="flex items-center gap-3">
+                 <span className="text-[12px] font-bold text-white uppercase tracking-widest drop-shadow-lg">⚡ Criar meu TeamBot</span>
+               </div>
+               <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-500 shadow-inner">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="text-white"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                </div>
             </div>
           </button>
