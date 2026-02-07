@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Profile, LinkItem, News, ViewType } from '../types';
 import { supabase } from '../supabaseClient';

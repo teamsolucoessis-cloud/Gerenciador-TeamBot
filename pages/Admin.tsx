@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Profile, LinkItem, News } from '../types';
 import { supabase } from '../supabaseClient';
@@ -186,7 +185,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
             <div className="w-20 h-20 bg-indigo-600/10 rounded-[2rem] border border-indigo-500/20 flex items-center justify-center mb-6 animate-mascot">
                <img src={BRAND_CONFIG.OFFICIAL_MASCOTE_URL} className="w-12 h-12 object-contain" alt="" />
             </div>
-            <h2 className="text-xl font-black text-white uppercase tracking-widest text-center">{authMode === 'LOGIN' ? 'Acessar Central' : 'Criar minha Central'}</h2>
+            <h2 className="text-xl font-black text-white uppercase tracking-widest text-center">{authMode === 'LOGIN' ? 'Acessar Central' : 'Criar meu Perfil'}</h2>
             <p className="text-[9px] text-slate-500 font-black uppercase tracking-[0.3em] mt-2 italic text-center">Protocolo de Identificação TeamBot</p>
           </div>
 
@@ -200,7 +199,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
               <input type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} className="w-full bg-slate-950 p-4 rounded-xl border border-white/5 outline-none focus:border-indigo-500/50 text-white text-sm" required />
             </div>
             <button disabled={loading} className="w-full bg-indigo-600 py-5 rounded-xl font-black text-white uppercase tracking-widest text-[10px] shadow-lg shadow-indigo-500/20 active:scale-95 transition-all">
-              {loading ? 'Sincronizando...' : authMode === 'LOGIN' ? 'Autenticar' : 'Finalizar Cadastro'}
+              {loading ? 'Sincronizando...' : authMode === 'LOGIN' ? 'Autenticar' : 'Criar perfil'}
             </button>
           </form>
           
@@ -306,7 +305,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                       setLoading(false);
                     }
                   }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative">
-                    <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors">
+                    <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                     
