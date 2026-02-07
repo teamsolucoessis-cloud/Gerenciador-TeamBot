@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { ViewType, Profile, LinkItem, News } from './types';
 import Header from './components/Header';
@@ -20,15 +21,8 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  const getInitialView = useCallback((): ViewType => {
-    const path = window.location.pathname;
-    if (path.includes('/admin')) return 'ADMIN';
-    if (path.includes('/privacidade')) return 'PRIVACY';
-    if (path.includes('/novidades')) return 'NEWS_LIST';
-    return 'HOME';
-  }, []);
-
-  const [currentView, setCurrentView] = useState<ViewType>(getInitialView());
+  // Sênior: Forçamos sempre o HOME no estado inicial para evitar erros de rota física no refresh
+  const [currentView, setCurrentView] = useState<ViewType>('HOME');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
   const [links, setLinks] = useState<LinkItem[]>([]);
@@ -47,15 +41,13 @@ const App: React.FC = () => {
 
       let targetUserId = null;
 
-      // Se NÃO houver slug na URL e o usuário estiver LOGADO, buscar o perfil DELE
       if (!urlSlug && session) {
         const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         if (ownProf) {
           setProfile(ownProf);
           targetUserId = ownProf.id;
         } else {
-          const slugToSearch = BRAND_CONFIG.SHOWCASE_SLUG;
-          const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slugToSearch).single();
+          const { data: profData } = await supabase.from('profiles').select('*').eq('slug', BRAND_CONFIG.SHOWCASE_SLUG).single();
           if (profData) { setProfile(profData); targetUserId = profData.id; }
         }
       } 
@@ -74,7 +66,7 @@ const App: React.FC = () => {
           supabase.from('news').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false })
         ]);
         if (lRes.data) setLinks(lRes.data);
-        if (nRes.data) setNews(nRes.data);
+        if (nRes.data) setNews(lRes.data);
       }
     } catch (err) {
       console.error("Fetch Data Failure:", err);
@@ -84,26 +76,33 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    // Sênior: No carregamento, limpamos a rota física para evitar 404 em servidores sem redirecionamento
+    const currentPath = window.location.pathname;
+    if (currentPath !== '/') {
+      window.history.replaceState({ view: 'HOME' }, '', '/');
+    }
+
     fetchData();
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsGuest(!session);
       if (event === 'SIGNED_OUT') {
         setProfile(INITIAL_PROFILE);
         setCurrentView('HOME');
-        window.history.pushState({ view: 'HOME' }, '', '/');
-        fetchData();
+        // Ao deslogar, forçamos o redirecionamento para o perfil oficial (público)
+        window.location.href = '/?u=' + BRAND_CONFIG.SHOWCASE_SLUG;
       }
     });
 
     const handlePop = (e: any) => {
-      setCurrentView(e.state?.view || getInitialView());
+      setCurrentView(e.state?.view || 'HOME');
     };
     window.addEventListener('popstate', handlePop);
     return () => {
       window.removeEventListener('popstate', handlePop);
       subscription.unsubscribe();
     };
-  }, [fetchData, getInitialView]);
+  }, [fetchData]);
 
   const navigateTo = (view: ViewType) => {
     const paths: Record<ViewType, string> = {
@@ -135,7 +134,6 @@ const App: React.FC = () => {
         onAdminClick={() => navigateTo('ADMIN')}
         mascotUrl={profile.mascot_url}
         onLogoClick={() => {
-          // Se estiver logado e quiser ver o perfil oficial, forçamos a URL /
           window.location.href = '/?u=' + BRAND_CONFIG.SHOWCASE_SLUG;
         }}
       />
@@ -146,7 +144,7 @@ const App: React.FC = () => {
         currentView={currentView} 
       />
 
-      <main className={`flex-grow pt-20 pb-32 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+      <main className={`flex-grow pt-20 pb-40 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
         {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} isGuest={isGuest} />}
         {currentView === 'NEWS_LIST' && <NewsList news={news} onBack={() => navigateTo('HOME')} />}
         {currentView === 'PRIVACY' && <Privacy onBack={() => navigateTo('HOME')} />}

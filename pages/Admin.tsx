@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Profile, LinkItem, News } from '../types';
 import { supabase } from '../supabaseClient';
@@ -152,9 +153,16 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (!error) {
-      onBack(); // Volta para home (Guest mode ativado pelo App.tsx listener)
+    setLoading(true);
+    try {
+      // Forçamos a saída imediata
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      // O listener no App.tsx cuidará do redirecionamento
+    } catch (err: any) {
+      addNotification("Falha ao deslogar", "error");
+    } finally {
+      setLoading(false);
     }
   };
 
