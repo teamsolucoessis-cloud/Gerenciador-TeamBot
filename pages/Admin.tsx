@@ -83,7 +83,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   };
 
   const generateAIInsight = async (userName: string) => {
-    const apiKey = process.env.API_KEY;
+    const apiKey = (process.env as any).API_KEY;
     if (!apiKey) return;
     setIsAssistantLoading(true);
     try {
@@ -323,25 +323,72 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                   </div>
 
                   {/* Seção de Redes Sociais no Admin */}
-                  <div className="space-y-4 pt-4 border-t border-white/5">
-                    <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Conexões Sociais</h3>
+                  <div className="space-y-4 pt-6 border-t border-white/5">
+                    <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4 text-center">Protocolo de Conexões Sociais</h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 gap-4">
+                      {/* YouTube */}
                       <div className="space-y-1">
-                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">YouTube URL</label>
-                        <input value={profile.youtube_url || ''} onChange={e => setProfile({...profile, youtube_url: e.target.value})} placeholder="https://youtube.com/@..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Canal do YouTube</label>
+                        <div className="relative group">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-red-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17Z"/><path d="m10 15 5-3-5-3z"/></svg>
+                          </div>
+                          <input 
+                            value={profile.youtube_url || ''} 
+                            onChange={e => setProfile({...profile, youtube_url: e.target.value})} 
+                            placeholder="https://youtube.com/@seu-canal" 
+                            className="w-full bg-slate-950 p-3 pl-12 rounded-xl text-[10px] font-medium text-slate-300 border border-white/5 outline-none focus:border-red-500/40 transition-all shadow-inner" 
+                          />
+                        </div>
                       </div>
+
+                      {/* Instagram */}
                       <div className="space-y-1">
-                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Instagram URL</label>
-                        <input value={profile.instagram_url || ''} onChange={e => setProfile({...profile, instagram_url: e.target.value})} placeholder="https://instagram.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Perfil do Instagram</label>
+                        <div className="relative group">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-pink-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+                          </div>
+                          <input 
+                            value={profile.instagram_url || ''} 
+                            onChange={e => setProfile({...profile, instagram_url: e.target.value})} 
+                            placeholder="https://instagram.com/seu-perfil" 
+                            className="w-full bg-slate-950 p-3 pl-12 rounded-xl text-[10px] font-medium text-slate-300 border border-white/5 outline-none focus:border-pink-500/40 transition-all shadow-inner" 
+                          />
+                        </div>
                       </div>
+
+                      {/* Facebook */}
                       <div className="space-y-1">
-                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Facebook URL</label>
-                        <input value={profile.facebook_url || ''} onChange={e => setProfile({...profile, facebook_url: e.target.value})} placeholder="https://facebook.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Página Facebook</label>
+                        <div className="relative group">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-blue-500 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+                          </div>
+                          <input 
+                            value={profile.facebook_url || ''} 
+                            onChange={e => setProfile({...profile, facebook_url: e.target.value})} 
+                            placeholder="https://facebook.com/sua-pagina" 
+                            className="w-full bg-slate-950 p-3 pl-12 rounded-xl text-[10px] font-medium text-slate-300 border border-white/5 outline-none focus:border-blue-500/40 transition-all shadow-inner" 
+                          />
+                        </div>
                       </div>
+
+                      {/* X (Twitter) */}
                       <div className="space-y-1">
-                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">X (Twitter) URL</label>
-                        <input value={profile.x_url || ''} onChange={e => setProfile({...profile, x_url: e.target.value})} placeholder="https://x.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Perfil X (Twitter)</label>
+                        <div className="relative group">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+                          </div>
+                          <input 
+                            value={profile.x_url || ''} 
+                            onChange={e => setProfile({...profile, x_url: e.target.value})} 
+                            placeholder="https://x.com/seu-perfil" 
+                            className="w-full bg-slate-950 p-3 pl-12 rounded-xl text-[10px] font-medium text-slate-300 border border-white/5 outline-none focus:border-white/40 transition-all shadow-inner" 
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
