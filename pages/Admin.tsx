@@ -82,7 +82,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   };
 
   const generateAIInsight = async (userName: string) => {
-    const apiKey = (window as any).process?.env?.API_KEY;
+    const apiKey = process.env.API_KEY;
     if (!apiKey) return;
     setIsAssistantLoading(true);
     try {
@@ -304,7 +304,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     } finally {
                       setLoading(false);
                     }
-                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative">
+                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative animate-in zoom-in-95 duration-300">
                     <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
@@ -376,7 +376,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     } finally {
                       setLoading(false);
                     }
-                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative">
+                  }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative animate-in zoom-in-95 duration-300">
                     <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
                       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>

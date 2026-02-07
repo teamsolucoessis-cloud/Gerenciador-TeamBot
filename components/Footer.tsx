@@ -1,8 +1,9 @@
-
 import React from 'react';
 
 const Footer: React.FC = () => {
-  const isSecure = !!((import.meta as any).env?.VITE_SUPABASE_URL);
+  // Busca a variável de forma resiliente para condizer com o supabaseClient
+  const getEnv = (key: string) => (import.meta as any).env?.[key] || (window as any).process?.env?.[key];
+  const isSecure = !!getEnv('VITE_SUPABASE_URL');
 
   return (
     <footer className="fixed bottom-0 left-0 right-0 p-4 z-30 pointer-events-none">
@@ -26,7 +27,7 @@ const Footer: React.FC = () => {
              </a>
           </div>
         </div>
-        <span className="text-[7px] text-slate-600/50 font-bold mt-2 uppercase tracking-widest">TeamBot v1.1.0 - Production Ready</span>
+        <span className="text-[7px] text-slate-600/50 font-bold mt-2 uppercase tracking-widest">TeamBot v1.4.5 - Cloud Ready</span>
       </div>
     </footer>
   );
