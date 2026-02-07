@@ -21,7 +21,6 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  // Sênior: Iniciamos sempre no HOME. O roteamento agora é via query param 'v'
   const [currentView, setCurrentView] = useState<ViewType>('HOME');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
@@ -39,13 +38,13 @@ const App: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsGuest(!session);
 
-      // Limpamos dados antigos para evitar vazamento de informações entre perfis
+      // Limpeza preventiva para garantir que dados de perfis anteriores não vazem
       setLinks([]);
       setNews([]);
 
       let targetUserId = null;
 
-      // Prioridade 1: Slug na URL (Visualização de perfil específico)
+      // 1. Prioridade: Slug na URL
       if (urlSlug) {
         const { data: profData } = await supabase.from('profiles').select('*').eq('slug', urlSlug.toLowerCase()).single();
         if (profData) {
@@ -53,7 +52,7 @@ const App: React.FC = () => {
           targetUserId = profData.id;
         }
       } 
-      // Prioridade 2: Usuário Logado sem slug na URL (Ver seu próprio perfil)
+      // 2. Fallback: Usuário Logado (Seu próprio perfil)
       else if (session) {
         const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
         if (ownProf) {
@@ -62,7 +61,7 @@ const App: React.FC = () => {
         }
       }
 
-      // Fallback: Se nada acima funcionar, carrega o perfil oficial TeamBot
+      // 3. Fallback Final: Vitrine Oficial
       if (!targetUserId) {
         const { data: officialProf } = await supabase.from('profiles').select('*').eq('slug', BRAND_CONFIG.SHOWCASE_SLUG).single();
         if (officialProf) {
@@ -88,38 +87,52 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Sênior: Lógica de Reset no F5. 
-    // Sempre que o app carrega, limpamos o parâmetro de visualização 'v', forçando a volta para HOME.
+    // Sênior: Lógica de Reset no Refresh (F5)
+    // Se a página for atualizada, removemos 'v' (visualização) mas mantemos 'u' (usuário)
     const params = new URLSearchParams(window.location.search);
     if (params.has('v')) {
       params.delete('v');
       const newUrl = params.toString() ? `/?${params.toString()}` : '/';
       window.history.replaceState({ view: 'HOME' }, '', newUrl);
+      setCurrentView('HOME');
     }
 
     fetchData();
 
+    // Listener para o botão Voltar do navegador/celular
+    const handlePopState = (event: PopStateEvent) => {
+      const state = event.state;
+      if (state && state.view) {
+        setCurrentView(state.view);
+      } else {
+        setCurrentView('HOME');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setIsGuest(!session);
       if (event === 'SIGNED_OUT') {
-        setProfile(INITIAL_PROFILE);
-        setCurrentView('HOME');
-        // Redirecionamento forçado para a vitrine oficial após logout
-        window.location.href = '/?u=' + BRAND_CONFIG.SHOWCASE_SLUG;
+        window.location.replace('/?u=' + BRAND_CONFIG.SHOWCASE_SLUG);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      subscription.unsubscribe();
+    };
   }, [fetchData]);
 
   const navigateTo = (view: ViewType) => {
     const params = new URLSearchParams(window.location.search);
     
-    // Atualiza o parâmetro de visualização na URL sem mudar o path (evita 404)
     if (view === 'HOME') params.delete('v');
     else params.set('v', view);
     
     const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    
+    // Sênior: Usamos pushState para criar entrada no histórico e permitir o botão Voltar
     window.history.pushState({ view }, '', newUrl);
     
     setCurrentView(view);
