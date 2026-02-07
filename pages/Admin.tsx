@@ -240,7 +240,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
           <div className="space-y-6">
             {activeTab === 'PROFILE' && (
               <div className="space-y-6">
-                <div className="glass-premium p-8 rounded-[2.5rem] border border-white/5 space-y-6">
+                <div className="glass-premium p-8 rounded-[2.5rem] border border-white/5 space-y-6 animate-in zoom-in-95 duration-300">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Avatar de Elite</label>
@@ -273,9 +273,9 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                   </div>
 
                   <div className="space-y-4">
-                    <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Seu Nome" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5" />
-                    <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="slug-da-url" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-indigo-400 border border-white/5" />
-                    <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio Estratégica" className="w-full bg-slate-950 p-4 rounded-xl text-xs font-medium text-slate-400 border border-white/5 h-24 resize-none" />
+                    <input value={profile.name} onChange={e => setProfile({...profile, name: e.target.value})} placeholder="Seu Nome" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5 outline-none focus:border-indigo-500/40" />
+                    <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="slug-da-url" className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-indigo-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                    <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio Estratégica" className="w-full bg-slate-950 p-4 rounded-xl text-xs font-medium text-slate-400 border border-white/5 h-24 resize-none outline-none focus:border-indigo-500/40" />
                   </div>
                   <button disabled={loading} onClick={handleSaveProfile} className="w-full bg-indigo-600 py-5 rounded-2xl font-black text-white text-[10px] uppercase tracking-widest shadow-xl active:scale-95 transition-all">Sincronizar Dados</button>
                 </div>
@@ -306,7 +306,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     }
                   }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative animate-in zoom-in-95 duration-300">
                     <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                     
                     <div className="flex gap-4 items-start">
@@ -321,13 +321,13 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                          }} />
                        </div>
                        <div className="flex-grow space-y-2 pt-2">
-                          <input placeholder="Título do Link" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-sm font-bold text-white border border-white/5" required />
-                          <input placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-xs font-mono text-indigo-300 border border-white/5" required />
+                          <input placeholder="Título do Link" value={newLink.title} onChange={e => setNewLink({...newLink, title: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-sm font-bold text-white border border-white/5 outline-none focus:border-indigo-500/40" required />
+                          <input placeholder="URL (https://...)" value={newLink.url} onChange={e => setNewLink({...newLink, url: e.target.value})} className="w-full bg-slate-950 p-3 rounded-xl text-xs font-mono text-indigo-300 border border-white/5 outline-none focus:border-indigo-500/40" required />
                        </div>
                     </div>
-                    <textarea placeholder="Explicação rápida" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-20 resize-none" />
+                    <textarea placeholder="Explicação rápida do link" value={newLink.description} onChange={e => setNewLink({...newLink, description: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-20 resize-none outline-none focus:border-indigo-500/40" />
                     <div className="flex gap-3 pt-2">
-                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-400 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
+                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-500 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
                       <button disabled={loading} className="flex-[2] bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
                         {loading ? 'Sincronizando...' : 'Confirmar e Publicar'}
                       </button>
@@ -378,7 +378,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     }
                   }} className="glass-premium p-8 rounded-[2.5rem] space-y-4 border border-indigo-500/20 shadow-2xl relative animate-in zoom-in-95 duration-300">
                     <button type="button" onClick={closeLinkPostForms} className="absolute top-6 right-6 p-2 text-slate-500 hover:text-white transition-colors z-10">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                     </button>
                     
                     <div className="relative h-40 bg-slate-900 rounded-3xl overflow-hidden border border-white/5 group cursor-pointer flex items-center justify-center">
@@ -390,12 +390,12 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                            if(url) setNewPost({...newPost, image_url: url});
                          }
                        }} />
-                       <span className="absolute text-[8px] font-black text-white uppercase group-hover:scale-110 transition-transform">Subir Banner 16:9</span>
+                       <span className="absolute text-[8px] font-black text-white uppercase group-hover:scale-110 transition-transform">Subir Banner (16:9)</span>
                     </div>
-                    <input placeholder="Título Chamativo" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5" required />
-                    <textarea placeholder="Conteúdo da atualização..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-32 resize-none" required />
+                    <input placeholder="Título Chamativo da Notícia" value={newPost.title} onChange={e => setNewPost({...newPost, title: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-sm font-bold text-white border border-white/5 outline-none focus:border-indigo-500/40" required />
+                    <textarea placeholder="Conteúdo da atualização estratégica..." value={newPost.content} onChange={e => setNewPost({...newPost, content: e.target.value})} className="w-full bg-slate-950 p-4 rounded-xl text-xs text-slate-400 border border-white/5 h-32 resize-none outline-none focus:border-indigo-500/40" required />
                     <div className="flex gap-3 pt-2">
-                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-400 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
+                      <button type="button" onClick={closeLinkPostForms} className="flex-grow bg-white/5 py-4 rounded-xl font-black text-slate-500 text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all border border-white/5">Cancelar</button>
                       <button disabled={loading} className="flex-[2] bg-indigo-600 py-4 rounded-xl font-black text-white text-[9px] uppercase tracking-[0.2em] shadow-lg active:scale-95 transition-all">
                         {loading ? 'Sincronizando...' : 'Disparar Notícia'}
                       </button>

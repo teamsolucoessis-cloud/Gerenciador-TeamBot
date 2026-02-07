@@ -1,28 +1,28 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Helper ultra-resiliente para buscar variáveis de ambiente em qualquer contexto (Vite, Netlify, Polyfill)
+// Helper ultra-resiliente para buscar variáveis de ambiente
 const getEnvVar = (key: string): string => {
   try {
-    // 1. Tenta via import.meta (padrão Vite)
-    const viteEnv = (import.meta as any).env?.[key];
-    if (viteEnv) return viteEnv;
+    // Lista de possíveis locais onde as chaves podem estar
+    const sources = [
+      (import.meta as any).env?.[key],
+      (import.meta as any).env?.[`VITE_${key}`],
+      (window as any).process?.env?.[key],
+      (window as any).process?.env?.[`VITE_${key}`],
+      (window as any).env?.[key],
+      typeof process !== 'undefined' ? process.env?.[key] : undefined,
+      typeof process !== 'undefined' ? process.env?.[`VITE_${key}`] : undefined,
+    ];
 
-    // 2. Tenta via process.env (padrão Node/Netlify/Vite Define)
-    const procEnv = (window as any).process?.env?.[key];
-    if (procEnv) return procEnv;
-    
-    // 3. Tenta acesso direto ao process.env se o polyfill falhar
-    if (typeof process !== 'undefined' && process.env && (process.env as any)[key]) {
-      return (process.env as any)[key];
-    }
+    const value = sources.find(v => v !== undefined && v !== null && v !== '');
+    return value || '';
   } catch (e) {
-    console.warn(`Erro ao acessar variável ${key}`, e);
+    return '';
   }
-  return '';
 };
 
-const supabaseUrl = getEnvVar('VITE_SUPABASE_URL');
-const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY');
+const supabaseUrl = getEnvVar('VITE_SUPABASE_URL') || getEnvVar('SUPABASE_URL');
+const supabaseAnonKey = getEnvVar('VITE_SUPABASE_ANON_KEY') || getEnvVar('SUPABASE_ANON_KEY');
 
 const createMockClient = () => {
   const mockResponse = { data: null, error: null };
@@ -38,8 +38,8 @@ const createMockClient = () => {
     auth: {
       getSession: async () => ({ data: { session: null }, error: null }),
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
-      signInWithPassword: async () => ({ data: null, error: new Error("Ambiente não configurado. Verifique as chaves VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.") }),
-      signUp: async () => ({ data: null, error: new Error("Ambiente não configurado.") }),
+      signInWithPassword: async () => ({ data: null, error: new Error("Ambiente Offline") }),
+      signUp: async () => ({ data: null, error: new Error("Ambiente Offline") }),
       signOut: async () => ({ data: null, error: null }),
     },
     from: () => chain,
@@ -48,7 +48,6 @@ const createMockClient = () => {
   } as any;
 };
 
-// Verifica se a URL é válida antes de instanciar o cliente
 const isValidUrl = (url: string) => {
   try { return new URL(url).protocol.startsWith('http'); } 
   catch { return false; }
@@ -61,5 +60,5 @@ export const supabase = (isValidUrl(supabaseUrl) && supabaseAnonKey)
 if (isValidUrl(supabaseUrl) && supabaseAnonKey) {
   console.log('%c TeamBot: Cloud Synced ', 'color: #10b981; font-weight: bold;');
 } else {
-  console.warn('%c TeamBot: Local Mode Active (Missing Keys) ', 'color: #f59e0b; font-weight: bold;');
+  console.warn('%c TeamBot: Local Mode ', 'color: #f59e0b; font-weight: bold;');
 }

@@ -89,11 +89,11 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
                 </div>
               </div>
             </div>
-            <div className="p-6">
-              <h3 className="text-white font-black text-lg mb-2 tracking-tight group-hover:text-indigo-300 transition-colors uppercase leading-tight">
+            <div className="p-7">
+              <h3 className="text-white font-black text-lg mb-3 tracking-tight group-hover:text-indigo-300 transition-colors uppercase leading-tight">
                 {latestNews.title}
               </h3>
-              <p className="text-slate-400 text-[10px] line-clamp-2 uppercase font-bold tracking-tight opacity-60 leading-relaxed mb-4">
+              <p className="text-slate-400 text-[10px] line-clamp-2 uppercase font-bold tracking-tight opacity-60 leading-relaxed mb-5">
                 {latestNews.content}
               </p>
               <div className="flex items-center gap-2 text-indigo-400 text-[8px] font-black uppercase tracking-[0.2em] group-hover:translate-x-1 transition-transform">
