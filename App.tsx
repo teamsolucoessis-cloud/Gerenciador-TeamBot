@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ViewType, Profile, LinkItem, News } from './types';
 import Header from './components/Header';
@@ -47,7 +46,6 @@ const App: React.FC = () => {
       setIsGuest(!session);
 
       let targetUserId = null;
-      let finalSlug = urlSlug;
 
       // Se NÃO houver slug na URL e o usuário estiver LOGADO, buscar o perfil DELE
       if (!urlSlug && session) {
@@ -56,11 +54,11 @@ const App: React.FC = () => {
           setProfile(ownProf);
           targetUserId = ownProf.id;
         } else {
-          // Fallback para vitrine se ele logou mas não tem perfil ainda
-          finalSlug = BRAND_CONFIG.SHOWCASE_SLUG;
+          const slugToSearch = BRAND_CONFIG.SHOWCASE_SLUG;
+          const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slugToSearch).single();
+          if (profData) { setProfile(profData); targetUserId = profData.id; }
         }
       } 
-      // Se houver slug na URL ou for GUEST (sem slug), buscar pelo slug (ou vitrine)
       else {
         const slugToSearch = urlSlug || BRAND_CONFIG.SHOWCASE_SLUG;
         const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slugToSearch.toLowerCase()).single();
@@ -87,11 +85,24 @@ const App: React.FC = () => {
 
   useEffect(() => {
     fetchData();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setIsGuest(!session);
+      if (event === 'SIGNED_OUT') {
+        setProfile(INITIAL_PROFILE);
+        setCurrentView('HOME');
+        window.history.pushState({ view: 'HOME' }, '', '/');
+        fetchData();
+      }
+    });
+
     const handlePop = (e: any) => {
       setCurrentView(e.state?.view || getInitialView());
     };
     window.addEventListener('popstate', handlePop);
-    return () => window.removeEventListener('popstate', handlePop);
+    return () => {
+      window.removeEventListener('popstate', handlePop);
+      subscription.unsubscribe();
+    };
   }, [fetchData, getInitialView]);
 
   const navigateTo = (view: ViewType) => {
@@ -123,6 +134,10 @@ const App: React.FC = () => {
         onMenuClick={() => setIsSidebarOpen(true)} 
         onAdminClick={() => navigateTo('ADMIN')}
         mascotUrl={profile.mascot_url}
+        onLogoClick={() => {
+          // Se estiver logado e quiser ver o perfil oficial, forçamos a URL /
+          window.location.href = '/?u=' + BRAND_CONFIG.SHOWCASE_SLUG;
+        }}
       />
       <Sidebar 
         isOpen={isSidebarOpen} 

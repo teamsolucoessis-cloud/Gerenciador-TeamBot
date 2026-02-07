@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Profile, LinkItem, News } from '../types';
 import { supabase } from '../supabaseClient';
@@ -152,6 +151,18 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
     setLoading(false);
   };
 
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (!error) {
+      onBack(); // Volta para home (Guest mode ativado pelo App.tsx listener)
+    }
+  };
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(publicLink);
+    addNotification('Link copiado!', 'success');
+  };
+
   const handleDeleteLink = async (id: string) => {
     if(!confirm('Deseja excluir este link estrategicamente?')) return;
     const { error } = await supabase.from('tools').delete().eq('id', id);
@@ -229,15 +240,26 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
 
           <div className="flex justify-between items-end px-2">
             <h1 className="text-3xl font-black text-white uppercase tracking-tighter">Admin</h1>
-            <button onClick={() => supabase.auth.signOut()} className="text-[9px] font-black uppercase text-slate-500 bg-white/5 px-4 py-2 rounded-lg hover:text-red-400 transition-colors">Logout</button>
+            <button onClick={handleLogout} className="text-[9px] font-black uppercase text-slate-500 bg-white/5 px-4 py-2 rounded-lg hover:text-red-400 transition-colors">Sair da Central</button>
           </div>
 
-          <div className="flex gap-2 p-1.5 glass-premium rounded-2xl border border-white/5">
-            {(['LINKS', 'NEWS', 'PROFILE'] as const).map(tab => (
-              <button key={tab} onClick={() => { setActiveTab(tab); closeLinkPostForms(); }} className={`flex-grow py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
-                {tab === 'LINKS' ? 'Links' : tab === 'NEWS' ? 'Updates' : 'Perfil'}
-              </button>
-            ))}
+          <div className="space-y-4">
+            <div className="flex gap-2 p-1.5 glass-premium rounded-2xl border border-white/5">
+              {(['LINKS', 'NEWS', 'PROFILE'] as const).map(tab => (
+                <button key={tab} onClick={() => { setActiveTab(tab); closeLinkPostForms(); }} className={`flex-grow py-3 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>
+                  {tab === 'LINKS' ? 'Links' : tab === 'NEWS' ? 'Updates' : 'Perfil'}
+                </button>
+              ))}
+            </div>
+
+            {/* Public Link Card - Always Visible when Logged In */}
+            <div className="glass-premium p-4 rounded-2xl border border-white/5 flex items-center justify-between group">
+              <div className="flex flex-col">
+                <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1">Seu Link Público</span>
+                <span className="text-indigo-400 text-[10px] font-mono font-bold truncate max-w-[180px]">{publicLink}</span>
+              </div>
+              <button onClick={copyToClipboard} className="bg-indigo-600/10 hover:bg-indigo-600/20 text-indigo-400 px-3 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest transition-all border border-indigo-500/20">Copiar Link</button>
+            </div>
           </div>
 
           <div className="space-y-6">
@@ -287,9 +309,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                         <input value={profile.slug || ''} onChange={e => setProfile({...profile, slug: e.target.value.toLowerCase().replace(/\s+/g, '-')})} placeholder="slug-da-url" className="w-full bg-slate-950 p-4 pl-14 rounded-xl text-sm font-bold text-indigo-400 border border-white/5 outline-none focus:border-indigo-500/40" />
                         <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] text-slate-600 font-bold uppercase">u=</div>
                       </div>
-                      <p className="text-[7px] text-slate-600 uppercase font-black tracking-widest mt-1 ml-1 truncate">
-                        Preview: {publicLink}
-                      </p>
                     </div>
 
                     <div className="space-y-1">
@@ -307,7 +326,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                       rel="noopener noreferrer"
                       className="w-full glass-premium py-4 rounded-2xl font-black text-indigo-400 text-[9px] uppercase tracking-widest border border-indigo-500/20 text-center hover:bg-indigo-500/5 transition-all"
                     >
-                      Ver Perfil Público ↗
+                      Visualizar Meu Perfil Ativo ↗
                     </a>
                   </div>
                 </div>

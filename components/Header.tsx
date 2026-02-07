@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { BRAND_CONFIG } from '../brand';
 
@@ -6,9 +5,10 @@ interface HeaderProps {
   onMenuClick: () => void;
   onAdminClick: () => void;
   mascotUrl?: string;
+  onLogoClick?: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick }) => {
+const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick, onLogoClick }) => {
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     e.currentTarget.src = BRAND_CONFIG.FALLBACK_URL;
   };
@@ -27,7 +27,10 @@ const Header: React.FC<HeaderProps> = ({ onMenuClick, onAdminClick }) => {
         </svg>
       </button>
 
-      <div className="flex items-center gap-3 select-none group cursor-pointer" onClick={() => window.location.href = '/'}>
+      <div 
+        className="flex items-center gap-3 select-none group cursor-pointer" 
+        onClick={onLogoClick || (() => window.location.href = '/')}
+      >
         <div className="w-9 h-9 bg-indigo-600/20 rounded-xl flex items-center justify-center border border-indigo-500/30 overflow-hidden icon-glow transition-transform group-hover:scale-110 duration-500">
            <img 
              src={BRAND_CONFIG.OFFICIAL_MASCOTE_URL} 
