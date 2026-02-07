@@ -27,6 +27,29 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
     e.currentTarget.src = GET_FALLBACK(seed);
   };
 
+  // Ícones SVG para Redes Sociais
+  const SocialIcon = ({ type, url }: { type: string, url?: string }) => {
+    if (!url) return null;
+    
+    const icons: Record<string, React.ReactNode> = {
+      youtube: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17Z"/><path d="m10 15 5-3-5-3z"/></svg>,
+      instagram: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>,
+      facebook: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>,
+      x: <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4l11.733 16h4.267l-11.733 -16z"/><path d="M4 20l6.768 -6.768m2.46 -2.46l6.772 -6.772"/></svg>
+    };
+
+    return (
+      <a 
+        href={url} 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="w-10 h-10 glass-premium rounded-full flex items-center justify-center text-slate-400 hover:text-white hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(79,70,229,0.3)] transition-all active:scale-90"
+      >
+        {icons[type]}
+      </a>
+    );
+  };
+
   return (
     <div className="flex flex-col items-center w-full animate-in fade-in slide-in-from-bottom-6 duration-1000 relative">
       
@@ -58,6 +81,14 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
           <p className="text-slate-400 text-[10px] mt-2 px-4 leading-relaxed font-medium italic opacity-70 uppercase tracking-widest">
             {profile.bio}
           </p>
+        </div>
+
+        {/* Social Links Section */}
+        <div className="flex items-center justify-center gap-4 mt-6">
+          <SocialIcon type="youtube" url={profile.youtube_url} />
+          <SocialIcon type="instagram" url={profile.instagram_url} />
+          <SocialIcon type="facebook" url={profile.facebook_url} />
+          <SocialIcon type="x" url={profile.x_url} />
         </div>
       </section>
 
@@ -158,25 +189,6 @@ const Home: React.FC<HomeProps> = ({ profile, links, news, onNavigate, isGuest }
           </div>
         )}
       </section>
-
-      {/* Floating CTA for Guests (Visitors) */}
-      {isGuest && (
-        <div className="fixed bottom-28 left-1/2 -translate-x-1/2 z-40 w-full max-w-[280px] animate-in slide-in-from-bottom-20 duration-1000">
-          <button 
-            onClick={() => onNavigate('ADMIN')}
-            className="w-full glass-premium p-1.5 rounded-full group shadow-[0_25px_60px_rgba(0,0,0,0.6),0_0_40px_rgba(79,70,229,0.3)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.7),0_0_50px_rgba(79,70,229,0.5)] transition-all duration-500 active:scale-95"
-          >
-            <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-600 py-4 px-6 rounded-full flex items-center justify-between gap-3 border border-white/10 group-hover:from-indigo-500 group-hover:to-purple-500 transition-all">
-               <div className="flex items-center gap-3">
-                 <span className="text-[12px] font-bold text-white uppercase tracking-widest drop-shadow-lg">⚡ Criar meu TeamBot</span>
-               </div>
-               <div className="w-7 h-7 bg-white/20 rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform duration-500 shadow-inner">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" className="text-white"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-               </div>
-            </div>
-          </button>
-        </div>
-      )}
     </div>
   );
 };

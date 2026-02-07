@@ -6,6 +6,10 @@ export interface Profile {
   avatar_url: string;
   mascot_url?: string;
   slug?: string;
+  youtube_url?: string;
+  instagram_url?: string;
+  facebook_url?: string;
+  x_url?: string;
 }
 
 export interface LinkItem {

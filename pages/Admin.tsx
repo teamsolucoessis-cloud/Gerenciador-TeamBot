@@ -155,7 +155,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const handleLogout = async () => {
     setLoading(true);
     try {
-      // Sênior: Garantimos a limpeza da sessão e redirecionamento de hardware
       await supabase.auth.signOut();
       window.location.replace('/?u=' + BRAND_CONFIG.SHOWCASE_SLUG);
     } catch (err: any) {
@@ -271,7 +270,7 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
           <div className="space-y-6">
             {activeTab === 'PROFILE' && (
               <div className="space-y-6">
-                <div className="glass-premium p-8 rounded-[2.5rem] border border-white/5 space-y-6 animate-in zoom-in-95 duration-300">
+                <div className="glass-premium p-8 rounded-[2.5rem] border border-white/5 space-y-8 animate-in zoom-in-95 duration-300">
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Avatar de Elite</label>
@@ -320,6 +319,30 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
                     <div className="space-y-1">
                       <label className="text-[8px] font-black text-slate-500 uppercase tracking-widest ml-1">Bio Estratégica</label>
                       <textarea value={profile.bio} onChange={e => setProfile({...profile, bio: e.target.value})} placeholder="Bio Estratégica" className="w-full bg-slate-950 p-4 rounded-xl text-xs font-medium text-slate-400 border border-white/5 h-24 resize-none outline-none focus:border-indigo-500/40" />
+                    </div>
+                  </div>
+
+                  {/* Seção de Redes Sociais no Admin */}
+                  <div className="space-y-4 pt-4 border-t border-white/5">
+                    <h3 className="text-[9px] font-black text-slate-500 uppercase tracking-[0.3em] mb-4">Conexões Sociais</h3>
+                    
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-1">
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">YouTube URL</label>
+                        <input value={profile.youtube_url || ''} onChange={e => setProfile({...profile, youtube_url: e.target.value})} placeholder="https://youtube.com/@..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Instagram URL</label>
+                        <input value={profile.instagram_url || ''} onChange={e => setProfile({...profile, instagram_url: e.target.value})} placeholder="https://instagram.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">Facebook URL</label>
+                        <input value={profile.facebook_url || ''} onChange={e => setProfile({...profile, facebook_url: e.target.value})} placeholder="https://facebook.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[7px] font-black text-slate-600 uppercase tracking-widest ml-1">X (Twitter) URL</label>
+                        <input value={profile.x_url || ''} onChange={e => setProfile({...profile, x_url: e.target.value})} placeholder="https://x.com/..." className="w-full bg-slate-950 p-3 rounded-xl text-[10px] font-medium text-slate-400 border border-white/5 outline-none focus:border-indigo-500/40" />
+                      </div>
                     </div>
                   </div>
 
