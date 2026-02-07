@@ -155,10 +155,9 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
   const handleLogout = async () => {
     setLoading(true);
     try {
-      // Forçamos a saída imediata
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      // O listener no App.tsx cuidará do redirecionamento
+      // Sênior: Garantimos a limpeza da sessão e redirecionamento de hardware
+      await supabase.auth.signOut();
+      window.location.replace('/?u=' + BRAND_CONFIG.SHOWCASE_SLUG);
     } catch (err: any) {
       addNotification("Falha ao deslogar", "error");
     } finally {
@@ -260,7 +259,6 @@ const Admin: React.FC<AdminProps> = ({ profile, setProfile, links, setLinks, new
               ))}
             </div>
 
-            {/* Public Link Card - Always Visible when Logged In */}
             <div className="glass-premium p-4 rounded-2xl border border-white/5 flex items-center justify-between group">
               <div className="flex flex-col">
                 <span className="text-[7px] font-black text-slate-600 uppercase tracking-[0.3em] mb-1">Seu Link Público</span>

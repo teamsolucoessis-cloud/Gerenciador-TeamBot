@@ -21,7 +21,7 @@ const INITIAL_PROFILE: Profile = {
 };
 
 const App: React.FC = () => {
-  // Sênior: Forçamos sempre o HOME no estado inicial para evitar erros de rota física no refresh
+  // Sênior: Iniciamos sempre no HOME. O roteamento agora é via query param 'v'
   const [currentView, setCurrentView] = useState<ViewType>('HOME');
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [profile, setProfile] = useState<Profile>(INITIAL_PROFILE);
@@ -39,34 +39,46 @@ const App: React.FC = () => {
       const { data: { session } } = await supabase.auth.getSession();
       setIsGuest(!session);
 
+      // Limpamos dados antigos para evitar vazamento de informações entre perfis
+      setLinks([]);
+      setNews([]);
+
       let targetUserId = null;
 
-      if (!urlSlug && session) {
-        const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
-        if (ownProf) {
-          setProfile(ownProf);
-          targetUserId = ownProf.id;
-        } else {
-          const { data: profData } = await supabase.from('profiles').select('*').eq('slug', BRAND_CONFIG.SHOWCASE_SLUG).single();
-          if (profData) { setProfile(profData); targetUserId = profData.id; }
-        }
-      } 
-      else {
-        const slugToSearch = urlSlug || BRAND_CONFIG.SHOWCASE_SLUG;
-        const { data: profData } = await supabase.from('profiles').select('*').eq('slug', slugToSearch.toLowerCase()).single();
+      // Prioridade 1: Slug na URL (Visualização de perfil específico)
+      if (urlSlug) {
+        const { data: profData } = await supabase.from('profiles').select('*').eq('slug', urlSlug.toLowerCase()).single();
         if (profData) {
           setProfile(profData);
           targetUserId = profData.id;
         }
+      } 
+      // Prioridade 2: Usuário Logado sem slug na URL (Ver seu próprio perfil)
+      else if (session) {
+        const { data: ownProf } = await supabase.from('profiles').select('*').eq('id', session.user.id).single();
+        if (ownProf) {
+          setProfile(ownProf);
+          targetUserId = ownProf.id;
+        }
       }
 
+      // Fallback: Se nada acima funcionar, carrega o perfil oficial TeamBot
+      if (!targetUserId) {
+        const { data: officialProf } = await supabase.from('profiles').select('*').eq('slug', BRAND_CONFIG.SHOWCASE_SLUG).single();
+        if (officialProf) {
+          setProfile(officialProf);
+          targetUserId = officialProf.id;
+        }
+      }
+
+      // Busca dados específicos do usuário identificado
       if (targetUserId) {
         const [lRes, nRes] = await Promise.all([
           supabase.from('tools').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false }),
           supabase.from('news').select('*').eq('user_id', targetUserId).order('created_at', { ascending: false })
         ]);
         if (lRes.data) setLinks(lRes.data);
-        if (nRes.data) setNews(lRes.data);
+        if (nRes.data) setNews(nRes.data);
       }
     } catch (err) {
       console.error("Fetch Data Failure:", err);
@@ -76,10 +88,13 @@ const App: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    // Sênior: No carregamento, limpamos a rota física para evitar 404 em servidores sem redirecionamento
-    const currentPath = window.location.pathname;
-    if (currentPath !== '/') {
-      window.history.replaceState({ view: 'HOME' }, '', '/');
+    // Sênior: Lógica de Reset no F5. 
+    // Sempre que o app carrega, limpamos o parâmetro de visualização 'v', forçando a volta para HOME.
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('v')) {
+      params.delete('v');
+      const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+      window.history.replaceState({ view: 'HOME' }, '', newUrl);
     }
 
     fetchData();
@@ -89,38 +104,23 @@ const App: React.FC = () => {
       if (event === 'SIGNED_OUT') {
         setProfile(INITIAL_PROFILE);
         setCurrentView('HOME');
-        // Ao deslogar, forçamos o redirecionamento para o perfil oficial (público)
+        // Redirecionamento forçado para a vitrine oficial após logout
         window.location.href = '/?u=' + BRAND_CONFIG.SHOWCASE_SLUG;
       }
     });
 
-    const handlePop = (e: any) => {
-      setCurrentView(e.state?.view || 'HOME');
-    };
-    window.addEventListener('popstate', handlePop);
-    return () => {
-      window.removeEventListener('popstate', handlePop);
-      subscription.unsubscribe();
-    };
+    return () => subscription.unsubscribe();
   }, [fetchData]);
 
   const navigateTo = (view: ViewType) => {
-    const paths: Record<ViewType, string> = {
-      'HOME': '/',
-      'ADMIN': '/admin',
-      'PRIVACY': '/privacidade',
-      'NEWS_LIST': '/novidades'
-    };
-    
     const params = new URLSearchParams(window.location.search);
-    const u = params.get('u');
-    const finalPath = u ? `${paths[view]}?u=${u}` : paths[view];
-
-    try {
-        window.history.pushState({ view }, '', finalPath);
-    } catch (e) {
-        console.warn("Navigation fallback");
-    }
+    
+    // Atualiza o parâmetro de visualização na URL sem mudar o path (evita 404)
+    if (view === 'HOME') params.delete('v');
+    else params.set('v', view);
+    
+    const newUrl = params.toString() ? `/?${params.toString()}` : '/';
+    window.history.pushState({ view }, '', newUrl);
     
     setCurrentView(view);
     setIsSidebarOpen(false);
@@ -144,7 +144,7 @@ const App: React.FC = () => {
         currentView={currentView} 
       />
 
-      <main className={`flex-grow pt-20 pb-40 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
+      <main className={`flex-grow pt-20 pb-44 px-4 max-w-2xl mx-auto w-full transition-opacity duration-500 ${loading ? 'opacity-50' : 'opacity-100'}`}>
         {currentView === 'HOME' && <Home profile={profile} links={links} news={news} onNavigate={navigateTo} isGuest={isGuest} />}
         {currentView === 'NEWS_LIST' && <NewsList news={news} onBack={() => navigateTo('HOME')} />}
         {currentView === 'PRIVACY' && <Privacy onBack={() => navigateTo('HOME')} />}
